@@ -1,0 +1,26 @@
+<script>
+    function getiOSVersion() {
+    var userAgent = navigator.userAgent;
+    var iOS = /iPad|iPhone|iPod/.test(userAgent);
+    
+    if (iOS) {
+        var match = /OS (\d+)_(\d+)_?(\d+)?/.exec(userAgent);
+        var version = '';
+        if (match) {
+            version = parseInt(match[1], 10);
+        }
+        return version;
+    } else {
+        return 0;
+    }
+}
+</script>
+<p>Progressive Web App Demo Page</p>
+<script>
+    window.alert(getiOSVersion());
+    if (getiOSVersion() > 10){ //PWA introduced with iOS 11.3
+        setTimeout(function() {
+            window.alert("You like Chinese sweat labour phones. Add our app to your roster!");
+        }, 3000);
+    }
+    </script>

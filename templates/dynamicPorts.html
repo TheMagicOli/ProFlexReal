@@ -1,0 +1,287 @@
+<!---PROFLEX PRE RELASE
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <script src="https://cdn.jsdelivr.net/npm/@joint/core@4.0.1/dist/joint.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <meta charset="utf-8">
+
+</head>
+    <body>
+        <noscript>
+            <h1>This app requires JavaScript to function</h1>
+        </noscript> -->
+        {% include "head.html" %}
+        <!--ALL FUNCTIONS AND COMMENTS-->
+        <script>
+                    //Resets X value in EditElement to always be = or > 0
+                    function resetXY(){
+                        try{
+                            //Gets element by id and then sets it to 0
+                            if (document.getElementById('xinput').value < 0){
+                                document.getElementById('xinput').value = 0;
+                            }
+                            if (document.getElementById('yinput').value < 0){
+                                document.getElementById('yinput').value = 0;
+                            }
+                        }
+                        catch (ex){
+                            //pass
+                        }
+                    }
+                    //setInterval updates every available ms
+                    setInterval(resetXY);
+                    
+                    //allList returns the graph in a JSON object
+                    function returnToJSON(){
+                        var rootsIdsSequence = graph.toJSON();
+                        return rootsIdsSequence;
+                    }
+
+                    //Changes all elements (as of 0.1) that display the current sel element in their .innerHTML
+                    function updateCurrentSelectedDOC(){
+                        document.getElementById("editsel").innerHTML = 'Edit "' + document.getElementById("UnList").value + '"';
+                        console.log(document.getElementById("editsel").value);
+                    }
+                    function returnElementByName(nameString){
+                            //get all Models and iterate through them, adding only their label/text attr to the array
+                            var allModels = graph.get('cells').models;
+                            for(var i = 0; i < allModels.length; i++) {
+                                var e = allModels[i];
+                                if (e.attr('label/text') == nameString){
+                                    return e;
+                                }
+                            }
+                    }
+                    function highlightSelectedElement(){
+                        let allModels = graph.get('cells').models;
+                        for(var i = 0; i < allModels.length; i++) {
+                            var f = allModels[i];
+                            f.attr("body/fill", "blue");
+                        }
+                        let e = returnElementByName(getSelectedElement());
+                        e.attr("body/fill", "red");
+                    }
+                    function getSelectedElement(){
+                        return document.getElementById('UnList').options[document.getElementById('UnList').selectedIndex ].value;
+                    }
+                    function addLink(parentElement, childElement){
+
+                        let parent = returnElementByName(parentElement);
+                        let child = returnElementByName(childElement);
+                        var link = new joint.shapes.standard.Link();
+                        link.source(parent);
+                        link.labels([{
+                            attrs: {
+                                text: {
+                                    text: '5 FEET'
+                                }
+                            }
+                        }]);
+                        link.target(child);
+                        link.addTo(graph); 
+                    }
+                    //Updates the select input box(es) with the id UnList with all current non standard.Link elements
+                    function updateElementList(){
+                        //Access list, clear all HTMl inside of it
+                        let list = document.getElementById("UnList"); //Current selected 
+                        list.innerHTML = "";
+                        let list2 = document.getElementById("UnList2"); //Selection option for connect
+                        list2.innerHTML = "";
+                        //get all Models and iterate through them, adding only their label/text attr to the array
+                        var allModels = graph.get('cells').models;
+                        let tempArray = [];
+                        console.log(allModels);
+
+                        for(var i = 0; i < allModels.length; i++) {
+                            var e = allModels[i];
+                            tempArray.push(e.attr('label/text'));
+                        }
+                        
+
+                        tempArray = tempArray.filter((element) => element !== undefined); //Remove all undefined standard.Link elements
+                        //TO FIX: each element has to be itereated sepeately for each list because if it append li to one, it doesn't to the other.
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                console.log(tempArray[i]);
+                                list.appendChild(li);
+                            }
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                console.log(tempArray[i]);
+                                list2.appendChild(li);
+                            }
+                    }
+
+        </script>
+        <!--REACTJS WORKSPACE-->
+        <div id="myholder" align="right"></div>
+        <!--TOOLBAR-->
+        <hr>    
+        <h1>LOT</h1>
+        <!--ALL MODAL CLASSES-->
+        <!--NEW ELEMENT MODAL (id=newElModal)-->
+        <div class="modal fade" id="newElModal" role="dialog">
+            <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">New Element</h4>
+            </div>
+            <div class="modal-body">
+                <p>Name
+                <input text="name" id="mname" maxlength="20" required></p>
+            </div>
+            <div class="modal-footer">
+                <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+                <button type="button" class="btn btn-default" onclick="var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName); rect2.addTo(graph);updateElementList();" data-dismiss="modal">Save</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    <!--EDIT CURRENT SEL ELEMENT MODAL (id=selEditModal)-->
+    <div class="modal fade" id="selEditModal" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Edit Current Element</h4>
+            </div>
+            <div class="modal-body">
+                <!---Code to make sure x is not a neg number-->
+                <script>
+                    //Resets by every ms getting the value of x and y and reseting them so they cannot be set to a number less than 0
+                    function resetXY(){
+                        try {
+                            if (document.getElementById('xinput').value < 0){
+                                document.getElementById('xinput').value = 0;
+                            }
+                            if (document.getElementById('yinput').value < 0){
+                                document.getElementById('yinput').value = 0;
+                            }
+                        }
+                        catch (e){
+                            //pass
+                        }
+                    }
+                    setInterval(resetXY);
+                </script>
+                <p>Position: X</p>
+                <input type="number" min=0 id="xinput" value=0 inputmode="numeric" pattern="[0-9]+">
+                 <p>Position: Y</p>
+                 <!--DEBUG ATTR CHANGER-->
+                 <input type="number" min=0 value=0 inputmode="numeric" pattern="[0-9]+"><br>
+                 <p>.attr( <input type="text" id="attr">) = <input type="text" id="changevalue"></p>
+                 <button onclick='addLink(getSelectedElement(), document.getElementById("UnList2").value)'>Connect To</button>
+                 <select id="UnList2"></select>
+                 
+            </div>
+            <script>
+                //Function to query all elements within a Graph object and return the correct one based on name (no 2 elements can have the same name)
+                let a = 1;
+            </script>
+            <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
+                <button type="button" sex="male" onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement()); window.alert(e); e.attr(document.getElementById('attr').value, document.getElementById('changevalue').value);updateElementList();}"><font color="green">Save Changes</font></button>
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    <script type="text/javascript">
+
+        var namespace = joint.shapes;
+
+
+        var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+
+        var paper = new joint.dia.Paper({
+            el: document.getElementById('myholder'),
+            model: graph,
+            width: 2000,
+            height: 500,
+            gridSize: 10,
+            drawGrid: true,
+            background: {
+                color: 'rgba(0, 255, 0, 0.3)'
+            },
+            cellViewNamespace: namespace
+        });
+
+        var rect = new joint.shapes.standard.Rectangle();
+        rect.position(100, 30);
+        rect.resize(100, 40);
+        rect.attr({
+            body: {
+                fill: 'blue'
+            },
+            label: {
+                text: 'Gas Source',
+                fill: 'white'
+            },
+            link: {
+            xlinkHref: 'https:/www.google.com'
+            },
+            gasAttributes: {
+                gastype: "naturalgas",
+                supplupressure: "2psi",
+                pressuredrop: "1psi",
+                sizepipe: "1/2",
+                lengthrun: 13,
+                flowcfh: 235
+            },
+        });
+        rect.addTo(graph);
+
+
+        var rect2 = rect.clone();
+        rect2.translate(300, 0);
+        rect2.attr('label/text', 'Stove');
+        rect2.addTo(graph);
+
+        var link = new joint.shapes.standard.Link();
+        link.source(rect);
+        link.labels([{
+    attrs: {
+        text: {
+            text: '5 FEET'
+        }
+    }
+}]);
+        link.target(rect2);
+        link.addTo(graph); 
+
+    </script>
+
+<button data-toggle="modal" data-target="#newElModal">New Element</button>
+<br>
+<!---Update selected Element-->
+<script>
+console.log("UpdateElement");
+setInterval(updateCurrentSelectedDOC);
+setInterval(highlightSelectedElement, 500);
+</script>
+
+<select id="UnList"></select>
+<button data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
+<button onclick="updateElementList();">ManLiReload</button>
+<button onclick='window.location.replace(window.location.href + "webapp")'>Dynamic Test</button>
+<button>Open Local File</button>
+<button onclick="window.alert()">Save File To Machine</button>
+<script>
+updateElementList(); //This must be here because the DOM element hasn't been created so cannot be invoked yet.
+
+
+</script>
+</body>
+</html>

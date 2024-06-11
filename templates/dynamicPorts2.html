@@ -1,0 +1,206 @@
+<!---PROFLEX PRE RELASE-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- SCRIPT DEPENDENCIES -->
+    <script src="https://cdn.jsdelivr.net/npm/@joint/core@4.0.1/dist/joint.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <meta charset="utf-8">
+
+</head>
+    <body>
+
+        <!--REACTJS WORKSPACE-->
+        <div id="myholder" align="right"></div>
+        <!--TOOLBAR-->
+        <hr>    
+        <!--ALL MODAL CLASSES-->
+        <!--NEW ELEMENT MODAL (id=newElModal)-->
+        <div class="modal fade" id="newElModal" role="dialog">
+            <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">New Element</h4>
+            </div>
+            <div class="modal-body">
+                <p>Name
+                <input text="name" id="mname" maxlength="20" required></p>
+            </div>
+            <div class="modal-footer">
+                <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+                <button type="button" class="btn btn-default" onclick="var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName); rect2.addTo(graph);updateElementList();" data-dismiss="modal">Save</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    <!--EDIT CURRENT SEL ELEMENT MODAL (id=selEditModal)-->
+    <div class="modal fade" id="selEditModal" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Edit Current Element</h4>
+            </div>
+            <div class="modal-body">
+                <!---Code to make sure x is not a neg number-->
+                <script>
+                    //Resets by every ms getting the value of x and y and reseting them so they cannot be set to a number less than 0
+                    function resetXY(){
+                        if (document.getElementById('xinput').value < 0){
+                            document.getElementById('xinput').value = 0;
+                        }
+                        if (document.getElementById('yinput').value < 0){
+                            document.getElementById('yinput').value = 0;
+                        }
+                    }
+                    setInterval(resetXY);
+                </script>
+                <p>Position: X</p>
+                <input type="number" min=0 id="xinput" value=0 inputmode="numeric" pattern="[0-9]+">
+                 <p>Position: Y</p>
+                 <!--DEBUG ATTR CHANGER-->
+                 <input type="number" min=0 value=0 inputmode="numeric" pattern="[0-9]+"><br>
+                 <p>.attr( <input type="text" id="attr">) = <input type="text" id="changevalue"></p>
+            </div>
+            <script>
+                //Function to query all elements within a Graph object and return the correct one based on name (no 2 elements can have the same name)
+                let a = 1;
+            </script>
+            <div class="modal-footer">
+                <button type="button" onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) { rect.attr(document.getElementById('attr').value, document.getElementById('changevalue').value);}"><font color="green">Save Changes</font></button>
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    <script type="text/javascript">
+
+        var namespace = joint.shapes;
+
+
+        var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+
+        var paper = new joint.dia.Paper({
+            el: document.getElementById('myholder'),
+            model: graph,
+            width: 2000,
+            height: 500,
+            gridSize: 10,
+            drawGrid: true,
+            background: {
+                color: 'rgba(0, 255, 0, 0.3)'
+            },
+            cellViewNamespace: namespace
+        });
+
+        var rect = new joint.shapes.standard.Rectangle();
+        rect.position(100, 30);
+        rect.resize(100, 40);
+        rect.attr({
+            body: {
+                fill: 'blue'
+            },
+            label: {
+                text: 'Gas Source',
+                fill: 'white'
+            },
+            link: {
+            xlinkHref: 'https:/www.google.com'
+            },
+            gasAttributes: {
+                gastype: "naturalgas",
+                supplupressure: "2psi",
+                pressuredrop: "1psi",
+                sizepipe: "1/2",
+                lengthrun: 13,
+                flowcfh: 235
+            },
+        });
+        rect.addTo(graph);
+
+        function returnName(){
+            window.alert(rect.attr('gasAttributes/lengthrun'));
+        }
+
+        var rect2 = rect.clone();
+        rect2.translate(300, 0);
+        rect2.attr('label/text', 'Stove');
+        rect2.addTo(graph);
+
+        var link = new joint.shapes.standard.Link();
+        link.source(rect);
+        link.labels([{
+    attrs: {
+        text: {
+            text: '5 FEET'
+        }
+    }
+}]);
+        link.target(rect2);
+        link.addTo(graph); 
+
+    </script>
+    <script>
+        function allList(){
+            var rootsIdsSequence = graph.toJSON();
+            
+            console.log(rootsIdsSequence);
+            return rootsIdsSequence;
+    }
+    </script>
+<button data-toggle="modal" data-target="#newElModal">New Element</button>
+<br>
+<!---Update selected Element-->
+<script>
+
+function updateCurrentSelectedDOC(){
+    document.getElementById("editsel").innerHTML = 'Edit "' + document.getElementById("UnList").value + '"';
+    console.log(document.getElementById("editsel").value);
+}
+setInterval(updateCurrentSelectedDOC);
+
+</script>
+
+<select id="UnList"></select>
+<button data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
+<button onclick='returnName()'>Get Child</button>
+<button onclick="updateElementList();">ManLiReload</button>
+
+<script>
+updateElementList();
+function updateElementList(){
+    let list = document.getElementById("UnList");
+    list.innerHTML = "";
+    var allModels = graph.get('cells').models;
+    let tempArray = [];
+    console.log(allModels);
+    for(var i = 0; i < allModels.length; i++) {
+        var e = allModels[i];
+        tempArray.push(e.attr('label/text'));
+        console.log(e.attr('label/text'));
+    }
+
+    console.log(tempArray);
+    tempArray = tempArray.filter((element) => element !== undefined); //Remove all undefined standard.Link elements
+    for (i = 0; i < tempArray.length; ++i) {
+            var li = document.createElement('option');
+            li.innerText = tempArray[i];
+            li.value = tempArray[i];
+            console.log(tempArray[i]);
+            list.appendChild(li);
+        }
+}
+</script>
+
+
+  
+  </div>
+</body>
+</html>
