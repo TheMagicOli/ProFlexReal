@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from flask import Flask, url_for, render_template, request, url_for, redirect
+from flask import Flask, url_for, render_template, request, url_for, redirect, send_file
 from flask_login import (
     LoginManager, 
     current_user,
@@ -73,6 +73,9 @@ def index():
 def getstrEPOCHtime():
     return str(time.time())
 
+@app.route("/d")
+def returnData():
+    return send_file("static/data.json")
 
 @app.route("/login/callback")
 def callback(): #This callback is complicated and tehnical. Here's the basic idea.
@@ -95,7 +98,13 @@ def callback(): #This callback is complicated and tehnical. Here's the basic ide
     )
     client.parse_request_body_response(json.dumps(tokenResponse.json()))
     return render_template("redirect.html")
-    
+
+
+@app.route("/editor")
+def test():
+    print("true")
+    return render_template("dynamicPorts.html")
+
 @app.route('/login')
 def login():
     googleProviderCFG = getGoogleProviderCFG()
@@ -108,6 +117,5 @@ def login():
     )
     return redirect(request_uri)
 
-
 if __name__ == "__main__":
-    app.run(ssl_context="adhoc")
+    app.run(ssl_context="adhoc", debug=False, host="192.0.0.1")

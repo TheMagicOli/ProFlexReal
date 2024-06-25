@@ -58,6 +58,57 @@
                                 }
                             }
                     }
+                    function updateLengths(jsonArray) {
+                        console.log("true");
+                        tempArray = ["5", "10", "20", "30"];
+                        lengths = document.getElementById("allLengths");
+                        lengths.innerHTML = "";
+                        console.log(lengths);
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                lengths.appendChild(li);
+                        }
+                        console.log(lengths);
+                        
+                }
+                function updateLengths(data){//Returns the BTU requirements on ProFlex based on data.json through the 
+                    typeGas = "propane";
+                    if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
+                    pressureDrop = document.getElementById("pressuredrop").value;
+                    pipeSizing = document.getElementById("allPipeDiam").value
+                    allLengths =  data[typeGas][pressureDrop][pipeSizing];
+                    console.log(allLengths);
+                    console.log(allLengths.length);
+                    newlist = document.getElementById("allLengths");
+                    newlist.innerHTML = "";
+                    for (let i = 0; i < Object.entries( allLengths).length; i++) {
+                        var li = document.createElement('option');
+                         li.innerHTML = Object.entries(allLengths)[i][0];
+                         li.value = Object.entries(allLengths)[i][0];
+                         newlist.appendChild(li);
+                    } 
+                }
+                    function getGasLengthPossibilities(){
+                        fetch('/d')
+                        .then((response) => response.json())
+                        .then((json) => updateLengths(json));//Very long conditional that finds the correct value based on pressure drop/type
+                    }
+                    function getGasBTUS(){
+                        fetch('/d')
+                        .then((response) => response.json())
+                        .then((json) => returnBTUS(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                    }
+                    function returnBTUS(data){
+                        typeGas = "propane";
+                        if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
+                        pressureDrop = document.getElementById("pressuredrop").value;
+                         pipeSizing = document.getElementById("allPipeDiam").value;
+                         pipeLengthRun = document.getElementById("allLengths").value;
+                         final  =  data[typeGas][pressureDrop][pipeSizing][pipeLengthRun];
+                         console.log(final);
+                    }
                     function highlightSelectedElement(){
                         let allModels = graph.get('cells').models;
                         for(var i = 0; i < allModels.length; i++) {
@@ -149,6 +200,54 @@
           
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPipeModal" role="dialog">
+    <div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4 class="modal-title">New Element</h4>
+    </div>
+    <div class="modal-body">
+        <select id="typegas" name="typegas">
+            <option value="prop">Propane</option>
+            <option value="nat">Natural Gas</option>
+          </select>
+          <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities()">
+            <option value="0.5 WC">0.5 WC</option>
+            <option value="1 WC">1 WC</option>
+            <option value="3 WC">3 WC</option>
+            <option value="6wc">6 WC (11-13)</option>
+            <option value="6wc">6 WC (13-14)</option>
+            <option value="1psig">1 PSIG</option>
+            <option value="3.5psig">3.5  PSIG</option>
+          </select>
+        <button onclick="getGasLengthPossibilities()">See Lengths</button>
+        <select id="allPipeDiam" onclick="getGasLengthPossibilities()">
+            <option value="1">1</option>
+            <option value="3/8">3/8</option>
+            <option value="1/2">1/2</option>
+            <option value="3/4">3/4</option>
+            <option value="1 1/4">1 1/4</option>
+          </select>
+        <select id="allLengths">
+        </select>
+        <button onclick="getGasBTUS()">Get BTU Requirements</button>
+    </div>
+    <div class="modal-footer">
+        <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+        <button type="button" class="btn btn-default" onclick="" data-dismiss="modal">Save</button>
+      <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+    </div>
+  </div>
+  
+</div>
+</div>
+</div>
+</div>
+</div>
     <!--EDIT CURRENT SEL ELEMENT MODAL (id=selEditModal)-->
     <div class="modal fade" id="selEditModal" role="dialog">
         <div class="modal-dialog">
@@ -254,16 +353,19 @@
         link.labels([{
     attrs: {
         text: {
-            text: '5 FEET'
+            text: '5 FEET (X BTUS)'
         }
     }
 }]);
         link.target(rect2);
         link.addTo(graph); 
+        paper.scale(1,1);
 
     </script>
 
 <button data-toggle="modal" data-target="#newElModal">New Element</button>
+<button data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
+
 <br>
 <!---Update selected Element-->
 <script>
@@ -271,13 +373,11 @@ console.log("UpdateElement");
 setInterval(updateCurrentSelectedDOC);
 setInterval(highlightSelectedElement, 500);
 </script>
-
+<p>Test</p>
 <select id="UnList"></select>
 <button data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
-<button onclick="updateElementList();">ManLiReload</button>
-<button onclick='window.location.replace(window.location.href + "webapp")'>Dynamic Test</button>
-<button>Open Local File</button>
-<button onclick="window.alert()">Save File To Machine</button>
+<button onclick="paper.scale(0.5, 0.5);">Scale Up</button>
+<button onclick="paper.scale(1,1);">Scale Down</button>
 <script>
 updateElementList(); //This must be here because the DOM element hasn't been created so cannot be invoked yet.
 
