@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+    <html>
+        <head>
+            <title>ProFlex Web Inspector</title>
+            <h1 style="color:white"><b>ProFlex Web Inspector</b></h1>
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+
+            <hr>
+            <body>
+                {% block content %}
+                {% endblock %}
+                <hr>
+            </body>
+        </head>
+    </html>
+
