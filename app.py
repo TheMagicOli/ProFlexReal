@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from flask import Flask, url_for, render_template, request, url_for, redirect
+from flask import Flask, url_for, render_template, request, url_for, redirect, send_file
 from flask_login import (
     LoginManager, 
     current_user,
@@ -107,7 +107,13 @@ def login():
         scope=["openid", "email", "profile"]
     )
     return redirect(request_uri)
+@app.route("/d")
+def getData():
+    return send_file("static/data.json")
 
+@app.route("/editor")
+def editor():
+    return render_template("dynamicPorts.html")
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc")

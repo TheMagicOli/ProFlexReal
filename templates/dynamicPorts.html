@@ -39,8 +39,7 @@
                     
                     //allList returns the graph in a JSON object
                     function returnToJSON(){
-                        var rootsIdsSequence = graph.toJSON();
-                        return rootsIdsSequence;
+                        return JSON.stringify( graph.toJSON());
                     }
 
                     //Changes all elements (as of 0.1) that display the current sel element in their .innerHTML
@@ -58,6 +57,54 @@
                                 }
                             }
                     }
+
+                function updateLengths(data){//Returns the BTU requirements on ProFlex based on data.json through the 
+                    typeGas = "propane";
+                    if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
+                    if (document.getElementById("typegas").value == "prop"){var typeGas = "propane";} //Evals gas type
+                    pressureDrop = document.getElementById("pressuredrop").value;
+                    pipeSizing = document.getElementById("allPipeDiam").value
+                    allLengths =  data[typeGas][pressureDrop][pipeSizing];
+                    console.log(allLengths);
+                    console.log(allLengths.length);
+                    newlist = document.getElementById("allLengths");
+                    newlist.innerHTML = "";
+                    for (let i = 0; i < Object.entries( allLengths).length; i++) {
+                        var li = document.createElement('option');
+                         li.innerHTML = Object.entries(allLengths)[i][0];
+                         li.value = Object.entries(allLengths)[i][0];
+                         newlist.appendChild(li);
+                    } 
+                }
+                function downloadJsonFile(jsonString, filename) {
+                    const dataUri = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonString);
+                    const anchor = document.createElement('a');
+                    anchor.href = dataUri;
+                    anchor.download = filename + '.json';
+                    anchor.style.display = 'none';
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    document.body.removeChild(anchor);
+                }
+                    function getGasLengthPossibilities(){
+                        fetch('/d')
+                        .then((response) => response.json())
+                        .then((json) => updateLengths(json));//Very long conditional that finds the correct value based on pressure drop/type
+                    }
+                    function getGasBTUS(){
+                        fetch('/d')
+                        .then((response) => response.json())
+                        .then((json) => returnBTUS(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                    }
+                    function returnBTUS(data){
+                        if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
+                        if (document.getElementById("typegas").value == "prop"){var typeGas = "propane";} //Evals gas type
+                        pressureDrop = document.getElementById("pressuredrop").value;
+                         pipeSizing = document.getElementById("allPipeDiam").value;
+                         pipeLengthRun = document.getElementById("allLengths").value;
+                         final  =  data[typeGas][pressureDrop][pipeSizing][pipeLengthRun];
+                         document.getElementById("btutext").innerHTML = final;
+                    }
                     function highlightSelectedElement(){
                         let allModels = graph.get('cells').models;
                         for(var i = 0; i < allModels.length; i++) {
@@ -74,12 +121,16 @@
 
                         let parent = returnElementByName(parentElement);
                         let child = returnElementByName(childElement);
+                        let BTUs = document.getElementById("btutext").innerHTML;
+                        let length = document.getElementById("allLengths").value;
+                        let pipeDiam = document.getElementById("allPipeDiam").value;
+                        let typeGas = document.getElementById("typegas").value.toUpperCase();
                         var link = new joint.shapes.standard.Link();
                         link.source(parent);
                         link.labels([{
                             attrs: {
                                 text: {
-                                    text: '5 FEET'
+                                    text: typeGas+ " " +  pipeDiam +  "in\n" +length + " FEET\n" + BTUs + " BTUs"
                                 }
                             }
                         }]);
@@ -93,6 +144,10 @@
                         list.innerHTML = "";
                         let list2 = document.getElementById("UnList2"); //Selection option for connect
                         list2.innerHTML = "";
+                        let list4 = document.getElementById("UnList4"); //Selection option for connect
+                        list4.innerHTML = "";
+                        let list5 = document.getElementById("UnList5"); //Selection option for connect
+                        list5.innerHTML = "";
                         //get all Models and iterate through them, adding only their label/text attr to the array
                         var allModels = graph.get('cells').models;
                         let tempArray = [];
@@ -119,6 +174,20 @@
                                 li.value = tempArray[i];
                                 console.log(tempArray[i]);
                                 list2.appendChild(li);
+                            }
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                console.log(tempArray[i]);
+                                list4.appendChild(li);
+                            }
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                console.log(tempArray[i]);
+                                list5.appendChild(li);
                             }
                     }
 
@@ -149,6 +218,67 @@
           
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPipeModal" role="dialog">
+    <div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4 class="modal-title">New Element</h4>
+    </div>
+    <div class="modal-body">
+        <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
+        <hr>
+        <p>
+        <select id="typegas" name="typegas">
+            <option value="prop">Propane</option>
+            <option value="nat">Natural</option>
+          </select> Gas</p>
+          <p>Pressure Drop
+          <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities()">
+            <option value="0.5 WC">0.5 WC</option>
+            <option value="1 WC">1 WC</option>
+            <option value="3 WC">3 WC</option>
+            <option value="6wc">6 WC (11-13)</option>
+            <option value="6wc">6 WC (13-14)</option>
+            <option value="1psig">1 PSIG</option>
+            <option value="3.5psig">3.5  PSIG</option>
+          </select></p>
+        <p>Pipe Diameter
+        <select id="allPipeDiam" onclick="getGasLengthPossibilities()">
+            <option value="1">1</option>
+            <option value="3/8">3/8</option>
+            <option value="1/2">1/2</option>
+            <option value="3/4">3/4</option>
+            <option value="1 1/4">1 1/4</option>
+          </select>
+           inches
+          </p>
+        <p>Run Length: 
+        <select id="allLengths">
+        </select>
+        feet</p>
+        <script>
+            getGasLengthPossibilities();
+        </script>
+        <hr>
+        <button onclick="getGasBTUS()">Get BTU Requirements</button>
+      <br><h3> <b>BTU Requirements: <h3 id="btutext">N/A</h3></b></h3>
+    </div>
+    <div class="modal-footer">
+        <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+        <button type="button" class="btn btn-default" onclick="addLink(document.getElementById('UnList4').value, document.getElementById('UnList5').value)" data-dismiss="modal"><font color="green">New Pipe</font></button>
+      <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+    </div>
+  </div>
+  
+</div>
+</div>
+</div>
+</div>
+</div>
     <!--EDIT CURRENT SEL ELEMENT MODAL (id=selEditModal)-->
     <div class="modal fade" id="selEditModal" role="dialog">
         <div class="modal-dialog">
@@ -191,7 +321,7 @@
                 let a = 1;
             </script>
             <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
-                <button type="button" sex="male" onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement()); window.alert(e); e.attr(document.getElementById('attr').value, document.getElementById('changevalue').value);updateElementList();}"><font color="green">Save Changes</font></button>
+                <button type="button" class="btn btn-default"  onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement()); window.alert(e); e.attr(document.getElementById('attr').value, document.getElementById('changevalue').value);updateElementList();}"><font color="green">Save</font></button>
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
@@ -249,21 +379,24 @@
         rect2.attr('label/text', 'Stove');
         rect2.addTo(graph);
 
-        var link = new joint.shapes.standard.Link();
+      /*  var link = new joint.shapes.standard.Link();
         link.source(rect);
         link.labels([{
     attrs: {
         text: {
-            text: '5 FEET'
+            text: '5 FEET (X BTUS)'
         }
     }
 }]);
         link.target(rect2);
-        link.addTo(graph); 
+        link.addTo(graph); */
+        paper.scale(1,1);
 
     </script>
 
 <button data-toggle="modal" data-target="#newElModal">New Element</button>
+<button data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
+
 <br>
 <!---Update selected Element-->
 <script>
@@ -271,17 +404,38 @@ console.log("UpdateElement");
 setInterval(updateCurrentSelectedDOC);
 setInterval(highlightSelectedElement, 500);
 </script>
-
+<p>Test</p>
 <select id="UnList"></select>
 <button data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
-<button onclick="updateElementList();">ManLiReload</button>
-<button onclick='window.location.replace(window.location.href + "webapp")'>Dynamic Test</button>
-<button>Open Local File</button>
-<button onclick="window.alert()">Save File To Machine</button>
+<button onclick="paper.scale(1, 1);">Zoom In</button>
+<button onclick="paper.scale(0.5,0.5);">Zoom Out</button>
+<br>
+<button onclick="var name = window.prompt('Selelct a name for this design');downloadJsonFile(returnToJSON(), name)">Save Design</button>
+<button onclick="document.getElementById('getFile').click()">Load Design</button>
+<button onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear()}}">Delete All</button>
 <script>
 updateElementList(); //This must be here because the DOM element hasn't been created so cannot be invoked yet.
+</script>
 
+<input type="file" id="getFile" style="display: none">
+<script>
+const finput = document.getElementById('getFile');
+const reader = new FileReader(); // Create the FileReader instance.
 
+finput.addEventListener('change', () => {
+  const file = finput.files[0];
+  if (!file) return; // No file selected or canceled.
+  if (!window.confirm("Loading a new design  will replace the current design. \n\nAre you sure you want to erase this design? ALL UNSAVED CHANGES WILL BE LOST"))return;
+
+  reader.onload = () => {
+    const fileContent = reader.result; // Use reader.result instead of event.target.result.
+    filedata = JSON.parse(fileContent);
+    graph.clear();
+    graph.fromJSON(filedata);
+    // You can process the content here (e.g., display it, send it to a server, etc.).
+  };
+  reader.readAsText(file); // Read the file as text.
+});
 </script>
 </body>
 </html>
