@@ -114,6 +114,11 @@ def getData():
 @app.route("/hotbar")
 def hotbar():
     return render_template("hotbar.html")
+
+@app.route("/products")
+def products():
+    return render_template("products.html")
+
 @app.route("/editor")
 def editor():
     return render_template("dynamicPorts.html")
