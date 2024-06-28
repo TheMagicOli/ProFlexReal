@@ -47,6 +47,7 @@
                         document.getElementById("editsel").innerHTML = 'Edit "' + document.getElementById("UnList").value + '"';
                         console.log(document.getElementById("editsel").value);
                     }
+                    //returns the object of an element based on the name of the string that's created
                     function returnElementByName(nameString){
                             //get all Models and iterate through them, adding only their label/text attr to the array
                             var allModels = graph.get('cells').models;
@@ -56,6 +57,7 @@
                                     return e;
                                 }
                             }
+                            return false;
                     }
 
                 function updateLengths(data){//Returns the BTU requirements on ProFlex based on data.json through the 
@@ -109,14 +111,15 @@
                         let allModels = graph.get('cells').models;
                         for(var i = 0; i < allModels.length; i++) {
                             var f = allModels[i];
-                            f.attr("body/fill", "blue");
+                            f.attr("body/fill", "rgba(107, 107, 256, 1)");
                         }
                         let e = returnElementByName(getSelectedElement());
-                        e.attr("body/fill", "red");
+                        e.attr("body/fill", "rgba(256, 107, 107, 1)");//232, 107, 107
                     }
                     function getSelectedElement(){
                         return document.getElementById('UnList').options[document.getElementById('UnList').selectedIndex ].value;
                     }
+                    //Creates a link between two elements, and sets both the attributes and changes
                     function addLink(parentElement, childElement){
 
                         let parent = returnElementByName(parentElement);
@@ -129,6 +132,10 @@
                         link.source(parent);
                         link.labels([{
                             attrs: {
+                                BTUs: BTUs,
+                                length: length,
+                                pipeDiam: pipeDiam,
+                                typeGas: typeGas,
                                 text: {
                                     text: typeGas+ " " +  pipeDiam +  "in\n" +length + " FEET\n" + BTUs + " BTUs"
                                 }
@@ -195,8 +202,7 @@
         <!--REACTJS WORKSPACE-->
         <div id="myholder" align="right"></div>
         <!--TOOLBAR-->
-        <hr>    
-        <h1>LOT</h1>
+            
         <!--ALL MODAL CLASSES-->
         <!--NEW ELEMENT MODAL (id=newElModal)-->
         <div class="modal fade" id="newElModal" role="dialog">
@@ -331,8 +337,7 @@
     <script type="text/javascript">
 
         var namespace = joint.shapes;
-
-
+        //Create new graph
         var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
 
         var paper = new joint.dia.Paper({
@@ -343,7 +348,7 @@
             gridSize: 10,
             drawGrid: true,
             background: {
-                color: 'rgba(0, 255, 0, 0.3)'
+                color: 'rgba(167, 214, 212, 0.3)'
             },
             cellViewNamespace: namespace
         });
@@ -353,58 +358,44 @@
         rect.resize(100, 40);
         rect.attr({
             body: {
-                fill: 'blue'
+                fill: 'rgba(167, 214, 212, 0.3)',
             },
             label: {
                 text: 'Gas Source',
                 fill: 'white'
-            },
-            link: {
-            xlinkHref: 'https:/www.google.com'
-            },
-            gasAttributes: {
-                gastype: "naturalgas",
-                supplupressure: "2psi",
-                pressuredrop: "1psi",
-                sizepipe: "1/2",
-                lengthrun: 13,
-                flowcfh: 235
-            },
+            }
         });
         rect.addTo(graph);
-
-
-        var rect2 = rect.clone();
-        rect2.translate(300, 0);
-        rect2.attr('label/text', 'Stove');
-        rect2.addTo(graph);
-
-      /*  var link = new joint.shapes.standard.Link();
-        link.source(rect);
-        link.labels([{
-    attrs: {
-        text: {
-            text: '5 FEET (X BTUS)'
-        }
-    }
-}]);
-        link.target(rect2);
-        link.addTo(graph); */
         paper.scale(1,1);
+        //Dynamically reize based on the users
+        function adjustPaperSize() {
+            const paperWidth = window.innerWidth; // Get the window width
+            const paperHeight = window.innerHeight; // Get the window height
+
+            // Set the paper size
+            paper.setDimensions(paperWidth, paperHeight/1.25);
+        }
+
+        // Call the function initially
+        adjustPaperSize();
+
+        // Listen for window resize events and update the paper size accordingly
+        window.addEventListener('resize', adjustPaperSize);
 
     </script>
+<iframe style="position: fixed;bottom: 0;" width="100%" height="20%" frameBorder="0" float="center" src="{{ url_for('hotbar') }}" title="description"></iframe>
 
-<button data-toggle="modal" data-target="#newElModal">New Element</button>
-<button data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
 
-<br>
-<!---Update selected Element-->
+
 <script>
 console.log("UpdateElement");
 setInterval(updateCurrentSelectedDOC);
 setInterval(highlightSelectedElement, 500);
 </script>
-<p>Test</p>
+
+<!--
+<button id="newElement" data-toggle="modal" data-target="#newElModal">New Element</button>
+<button data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
 <select id="UnList"></select>
 <button data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
 <button onclick="paper.scale(1, 1);">Zoom In</button>
@@ -412,7 +403,7 @@ setInterval(highlightSelectedElement, 500);
 <br>
 <button onclick="var name = window.prompt('Selelct a name for this design');downloadJsonFile(returnToJSON(), name)">Save Design</button>
 <button onclick="document.getElementById('getFile').click()">Load Design</button>
-<button onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear()}}">Delete All</button>
+<button onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();}}">Delete All</button>
 <script>
 updateElementList(); //This must be here because the DOM element hasn't been created so cannot be invoked yet.
 </script>

@@ -111,6 +111,9 @@ def login():
 def getData():
     return send_file("static/data.json")
 
+@app.route("/hotbar")
+def hotbar():
+    return render_template("hotbar.html")
 @app.route("/editor")
 def editor():
     return render_template("dynamicPorts.html")
