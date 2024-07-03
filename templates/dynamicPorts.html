@@ -45,6 +45,7 @@
                     //Changes all elements (as of 0.1) that display the current sel element in their .innerHTML
                     function updateCurrentSelectedDOC(){
                         document.getElementById("editsel").innerHTML = 'Edit ' + document.getElementById("UnList").value + '';
+                        document.getElementById("delText").innerHTML = document.getElementById("UnList").value;
                         console.log(document.getElementById("editsel").value);
                     }
 
@@ -83,7 +84,7 @@
                     const dataUri = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonString);
                     const anchor = document.createElement('a');
                     anchor.href = dataUri;
-                    anchor.download = filename + '.json';
+                    anchor.download = filename + '.pfxds';
                     anchor.style.display = 'none';
                     document.body.appendChild(anchor);
                     anchor.click();
@@ -201,8 +202,8 @@
 
         </script>
         <!--REACTJS WORKSPACE-->
-        <select id="UnList" class="customselect" float="position:absolute; bottom: 0; right: 0;z-index: 1000;"></select><button type="button" id="pressToggle" aria-pressed="false" onclick="this.setAttribute('aria-pressed', !this.getAttribute('aria-pressed')); this.getAttribute('aria-pressed') ? window.alert(this.getAttribute('aria-pressed')) : paper.scale(0.5,0.5)">Toggle</button>
-
+       <!----> <select style="width:20%;" width="50%" id="UnList" class="customselect" float="position:absolute; bottom: 0; right: 0;z-index: 1000;"></select>
+        <input type="range" id="points" width="50" name="points" min="0" max="100" value=5 oninput="paper.scale(this.value*0.01+0.5,this.value*0.01+0.5);" float="position:absolute; bottom: 0; left: 0;z-index: 1000;">
         <div id="myholder" align="right"></div>
         <!--TOOLBAR-->
             
@@ -249,11 +250,12 @@
           <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities()">
             <option value="0.5 WC">0.5 WC</option>
             <option value="1 WC">1 WC</option>
+            <option value="2.5 WC">2.5 SC</option>
             <option value="3 WC">3 WC</option>
-            <option value="6wc">6 WC (11-13)</option>
-            <option value="6wc">6 WC (13-14)</option>
-            <option value="1psig">1 PSIG</option>
-            <option value="3.5psig">3.5  PSIG</option>
+            <option value="6 WC (11-13)">6 WC (11-13)</option>
+            <option value="6 WC (13-14)">6 WC (13-14)</option>
+            <option value="1 PSIG">1 PSIG</option>
+            <option value="3.5 PSIG">3.5 PSIG</option>
           </select></p>
         <p>Pipe Diameter
         <select id="allPipeDiam" onclick="getGasLengthPossibilities()">
@@ -380,6 +382,27 @@
           
         </div>
       </div>
+<!---DELETE MENU-->
+      <div class="modal fade" id="deleteMenu" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Delete Element</h4>
+            </div>
+            <div class="modal-body">
+                <h2>Delete "<span id="delText"></span>" </h2>
+                <button onclick="returnElementByName(getSelectedElement()).remove()" data-dismiss="modal">Delete</button>
+                 
+            </div>
+            <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
 
 
       
@@ -449,14 +472,15 @@ setInterval(highlightSelectedElement, 500);
 
 <button hidden id="newElement" data-toggle="modal" data-target="#newElModal">New Element</button>
 <button hidden id="newPipe" data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
-<button hidden id="priceSheetBT" data-toggle="modal" data-target="#priceSheet">New Pipe</button>
+<button hidden id="priceSheetBT" data-toggle="modal" data-target="#priceSheet"></button>
+<button hidden id="deleteBT" data-toggle="modal" data-target="#deleteMenu">e</button>
 
 <button hidden data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
 
 <br>
 <button hidden id="saveDesign" onclick="var name = window.prompt('Selelct a name for this design');downloadJsonFile(returnToJSON(), name)">Save Design</button>
-<button hidden id="loadDesign" onclick="document.getElementById('getFile').click()">Load Design</button>
-<button hidden onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();}}">Delete All</button>
+<button hidden id="loadDesign" onclick="document.getElementById('getFile').click();">Load Design</button>
+<button hidden onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();updateElementList();}}">Delete All</button>
 
 <input type="file" id="getFile" style="display: none">
 <script>
@@ -473,6 +497,7 @@ finput.addEventListener('change', () => {
     filedata = JSON.parse(fileContent);
     graph.clear();
     graph.fromJSON(filedata);
+    updateElementList();
     // You can process the content here (e.g., display it, send it to a server, etc.).
   };
   reader.readAsText(file); // Read the file as text.
