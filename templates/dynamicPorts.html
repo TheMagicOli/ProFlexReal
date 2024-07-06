@@ -139,7 +139,7 @@
                                 pipeDiam: pipeDiam,
                                 typeGas: typeGas,
                                 text: {
-                                    text: typeGas+ " " +  pipeDiam +  "in\n" +length + " FEET\n" + BTUs + " BTUs"
+                                    text: typeGas+ " " +  pipeDiam +  " INCH\n" +length + " FEET\n" + BTUs + " BTUs"
                                 }
                             }
                         }]);
@@ -242,20 +242,20 @@
         <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
         <hr>
         <p>
-        <select id="typegas" name="typegas">
+        <select id="typegas" name="typegas" onchange="updateOptions()">
             <option value="prop">Propane</option>
             <option value="nat">Natural</option>
           </select> Gas</p>
           <p>Pressure Drop
           <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities()">
-            <option value="0.5 WC">0.5 WC</option>
-            <option value="1 WC">1 WC</option>
-            <option value="2.5 WC">2.5 SC</option>
-            <option value="3 WC">3 WC</option>
-            <option value="6 WC (11-13)">6 WC (11-13)</option>
-            <option value="6 WC (13-14)">6 WC (13-14)</option>
-            <option value="1 PSIG">1 PSIG</option>
-            <option value="3.5 PSIG">3.5 PSIG</option>
+            <option value="0.5 WC" id="0.5 WC">0.5 WC</option>
+            <option value="1 WC" id="1 WC">1 WC</option>
+            <option value="2.5 WC" id="2.5 WC" style="display: none">2.5 WC</option>
+            <option value="3 WC" id="3 WC">3 WC</option>
+            <option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option>
+            <option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option>
+            <option value="1 PSIG" id="1 PSIG">1 PSIG</option>
+            <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>
           </select></p>
         <p>Pipe Diameter
         <select id="allPipeDiam" onclick="getGasLengthPossibilities()">
@@ -274,6 +274,16 @@
         <script>
             getGasLengthPossibilities();
         </script>
+            <script>
+              function updateOptions(){
+                if (document.getElementById("typegas").value == "nat"){
+                  document.getElementById("pressuredrop").innerHTML = '            <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="1 WC" id="1 WC">1 WC</option><option value="3 WC" id="3 WC">3 WC</option><option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option><option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
+                }
+                if (document.getElementById("typegas").value == "prop"){
+                  document.getElementById("pressuredrop").innerHTML = ' <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="2.5 WC" id="2.5 WC">2.5 WC</option>'
+                }
+              }
+            </script>
         <hr>
         <button onclick="getGasBTUS()">Get BTU Requirements</button>
       <br><h3> <b>BTU Requirements: <h3 id="btutext">N/A</h3></b></h3>
