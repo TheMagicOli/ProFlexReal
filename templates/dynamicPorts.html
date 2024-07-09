@@ -162,8 +162,8 @@
                         //Access list, clear all HTMl inside of it
                         let list = document.getElementById("UnList"); //Current selected 
                         list.innerHTML = "";
-                        let list2 = document.getElementById("UnList2"); //Selection option for connect
-                        list2.innerHTML = "";
+                       /* let list2 = document.getElementById("UnList2"); //Selection option for connect
+                        list2.innerHTML = "";*/ //Deprecated
                         let list4 = document.getElementById("UnList4"); //Selection option for connect
                         list4.innerHTML = "";
                         let list5 = document.getElementById("UnList5"); //Selection option for connect
@@ -190,13 +190,13 @@
                                 console.log(tempArray[i]);
                                 list.appendChild(li);
                             }
-                        for (i = 0; i < tempArray.length; ++i) {
+                       /* for (i = 0; i < tempArray.length; ++i) {
                                 var li = document.createElement('option');
                                 li.innerText = tempArray[i];
                                 li.value = tempArray[i];
                                 console.log(tempArray[i]);
                                 list2.appendChild(li);
-                            }
+                            } */ //Deprecated
                         for (i = 0; i < tempArray.length; ++i) {
                                 var li = document.createElement('option');
                                 li.innerText = tempArray[i];
@@ -350,17 +350,27 @@
                 <select id="allAttributes">
                   <option value="label/text">Name</option>
                   <option value="body/fill">Color</option>
-
+                  <option value="x">X Position</option>
+                  <option value="y">Y Position</option>
                 </select>
+                <input float="left" id="changevalue">
+                <script>
+                  function updateTypeSel(){
+                    if (document.getElementById("allAttributes").value == "body/fill"){document.getElementById("changevalue").style.display = "none"};
+                    if (document.getElementById("allAttributes").value == "label/text"){document.getElementById("changevalue").style.display = "block"};
+                  //  if (document.getElementById("allAttributes").value == "body/fill"){document.getElementById("changevalue").style.display = "none"};
 
-                <p>Position: X</p>
+                  }
+                  setInterval(updateTypeSel);
+                </script>
+
+              <!--  <p>Position: X</p>
                 <input type="number" min=0 id="xinput" value=0 inputmode="numeric" pattern="[0-9]+">
                  <p>Position: Y</p>
-                 <!--DEBUG ATTR CHANGER-->
                  <input type="number" min=0 value=0 inputmode="numeric" pattern="[0-9]+"><br>
                  <p>.attr( <input type="text" id="attr">) = <input type="text" id="changevalue"></p>
                  <button onclick='addLink(getSelectedElement(), document.getElementById("UnList2").value)'>Connect To</button>
-                 <select id="UnList2"></select>
+                 <select id="UnList2"></select> -->
                  
             </div>
             <script>
@@ -368,7 +378,7 @@
                 let a = 1;
             </script>
             <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
-                <button type="button" class="btn btn-default"  onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement());  e.attr(document.getElementById('attr').value, document.getElementById('changevalue').value);updateElementList();}"><font color="green">Save</font></button>
+                <button type="button" class="btn btn-default"  onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement());  e.attr(document.getElementById('allAttributes').value, document.getElementById('changevalue').value);updateElementList();}"><font color="green">Save</font></button>
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
