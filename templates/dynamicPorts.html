@@ -44,14 +44,14 @@
 
                     //Changes all elements (as of 0.1) that display the current sel element in their .innerHTML
                     function updateCurrentSelectedDOC(){
-                      var iframe = document.getElementById('iframeId');
-                      var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-                      document.getElementById("editsel").innerHTML = 'Edit ' + innerDoc.getElementById("UnList6").value + '';
-                      document.getElementById("delText").innerHTML = innerDoc.getElementById("UnList6").value;
-  
-                       //document.getElementById("editsel").innerHTML = 'Edit ' + document.getElementById("UnList").value + '';
-                        //document.getElementById("delText").innerHTML = document.getElementById("UnList").value;
-                        console.log(document.getElementById("editsel").value);
+                      
+                     var iframe = document.getElementById('hotbar');
+                     // var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+                      document.getElementById("editsel").innerHTML = 'Edit ' + iframe.contentWindow.document.getElementById("UnList6").value + '';
+                      document.getElementById("delText").innerHTML = iframe.contentWindow.document.getElementById("UnList6").value;
+                    //  document.getElementById("editsel").innerHTML = 'Edit ' + document.getElementById("UnList").value + '';
+                   //   document.getElementById("delText").innerHTML = document.getElementById("UnList").value;
+                       // console.log(document.getElementById("editsel").value);
                     }
 
                     //returns the object of an element based on the name of the string that's created
@@ -124,9 +124,11 @@
                         e.attr("body/fill", "rgba(256, 107, 107, 1)");//232, 107, 107
                     }
                     function getSelectedElement(){
-                      var iframe = document.getElementById('iframeId');
-                      var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-                      return innerDoc.getElementById("UnList6").options[document.getElementById('UnList6').selectedIndex ].value;
+                      var iframe = document.getElementById("hotbar");
+                      console.log("ERM WHAT THE SIGMA");
+                      console.log(iframe.contentWindow.document.getElementById("UnList6").options[iframe.contentWindow.document.getElementById('UnList6').selectedIndex ].value);
+                      console.log("END SIGMA");
+                      return iframe.contentWindow.document.getElementById("UnList6").options[iframe.contentWindow.document.getElementById('UnList6').selectedIndex ].value;
                       //Old code
                        // return document.getElementById('UnList').options[document.getElementById('UnList').selectedIndex ].value;
                     }
@@ -166,6 +168,8 @@
                         list4.innerHTML = "";
                         let list5 = document.getElementById("UnList5"); //Selection option for connect
                         list5.innerHTML = "";
+                        let list6 = document.getElementById("hotbar").contentWindow.document.getElementById("UnList6"); //Selection in hotbar
+                        list6.innerHTML = "";
                         //get all Models and iterate through them, adding only their label/text attr to the array
                         var allModels = graph.get('cells').models;
                         let tempArray = [];
@@ -206,6 +210,13 @@
                                 li.value = tempArray[i];
                                 console.log(tempArray[i]);
                                 list5.appendChild(li);
+                            }
+                            for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                console.log(tempArray[i]);
+                                list6.appendChild(li);
                             }
                     }
 
