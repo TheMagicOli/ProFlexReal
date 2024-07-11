@@ -353,11 +353,14 @@
                   <option value="x">X Position</option>
                   <option value="y">Y Position</option>
                 </select>
+                <select id="colorvalue">
+                  <option value="rgb(214, 214, 201, 0.3)">White</option>
+                </select>
                 <input float="left" id="changevalue">
                 <script>
                   function updateTypeSel(){
-                    if (document.getElementById("allAttributes").value == "body/fill"){document.getElementById("changevalue").style.display = "none"};
-                    if (document.getElementById("allAttributes").value == "label/text"){document.getElementById("changevalue").style.display = "block"};
+                    if (document.getElementById("allAttributes").value == "body/fill"){document.getElementById("changevalue").style.display = "none";document.getElementById("colorvalue").style.display = "inline"; };
+                    if (document.getElementById("allAttributes").value == "label/text"){document.getElementById("changevalue").style.display = "inline"; document.getElementById("colorvalue").style.display = "none";};
                   //  if (document.getElementById("allAttributes").value == "body/fill"){document.getElementById("changevalue").style.display = "none"};
 
                   }
@@ -378,7 +381,7 @@
                 let a = 1;
             </script>
             <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
-                <button type="button" class="btn btn-default"  onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement());  e.attr(document.getElementById('allAttributes').value, document.getElementById('changevalue').value);updateElementList();}"><font color="green">Save</font></button>
+                <button type="button" class="btn btn-default"  onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement()); if (document.getElementById('allAttributes').value == 'label/text') { e.attr(document.getElementById('allAttributes').value, document.getElementById('changevalue').value);} if (document.getElementById('allAttributes').value == 'body/fill') { e.attr(document.getElementById('allAttributes').value, document.getElementById('colorvalue').value);}   updateElementList();}"><font color="green">Save</font></button>
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
