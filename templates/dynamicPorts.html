@@ -122,6 +122,46 @@
                         .then((response) => response.json())
                         .then((json) => returnBTUS(json));//Very long conditional that finds the correct value based on pressure drop/type  
                     }
+                    function getPriceRecs(){
+                      fetch('/p')
+                        .then((response) => response.json())
+                        .then((json) => getRecommendedPricePlan(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                    }
+                    function getRecommendedPricePlan(data){
+                      //Function that returns all links on the current selected element and then applies each one to the option in the Edit Menu
+                      graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true });
+                      all = graph.get('cells').models;
+                      allLinks = [];
+                      for(var i = 0; i < all.length; i++) { //First get list of elements.
+                        if (all[i]["attributes"]["type"] == "standard.Link"){
+                          allLinks.push(all[i]["attributes"]["labels"][0]["attrs"]);
+                        }
+                      }
+                      for (i = 0; i < allLinks.length; ++i) {
+                        console.log(allLinks[i]);
+                        var gasDict = data[allLinks[i]["typeGas"]];
+                        var dataforPipe = gasDict[allLinks[i]["pipeDiam"]];
+                        optimalProductName = "No Product Available";
+                        for (const [key, value] of Object.entries(dataforPipe)) {
+                          console.log("key: " + key)
+                          console.log("len: " + allLinks[i]["length"] )
+                          if (parseInt(key) > parseInt(allLinks[i]["length"]))
+                          {console.log('optimal is ' + value.name);optimalProductName=value.name;break;}
+                        }
+                        window.alert(optimalProductName);
+                      }
+                  }
+                  function findClosestHighestValue(dictionary, x) {
+    let closestHigherKey = null;
+    for (const key in dictionary) {
+        if (parseInt(key) > x) {
+            if (!closestHigherKey || parseInt(key) < parseInt(closestHigherKey)) {
+                closestHigherKey = key;
+            }
+        }
+    }
+    return closestHigherKey ? dictionary[closestHigherKey] : null;
+}
                     function returnBTUS(data){
                         if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
                         if (document.getElementById("typegas").value == "prop"){var typeGas = "propane";} //Evals gas type
@@ -176,7 +216,7 @@
                       var all =  graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true });
                       pipelist = document.getElementById("portedit");
                       for (i = 0; i < all.length; ++i) {
-                        console.log(all[i]["attributes"]);
+                        console.log(all[i]["attributes"]["labels"][0]["attrs"]);
                         console.log(all[i]["attributes"]["labels"][0]["attrs"]["text"]["text"]);
                         var li = document.createElement('option');
                         li.innerText = all[i]["attributes"]["labels"][0]["attrs"]["text"]["text"].replace(/(\r\n|\n|\r)/gm, " - ");
@@ -251,6 +291,37 @@
                                 list6.appendChild(li);
                             }
                     }
+//from https://stackoverflow.com/questions/4825683/how-do-i-create-and-read-a-value-from-cookie-with-javascript
+function createCookie(name, value, days) {
+    var expires;
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toGMTString();
+    }
+    else {
+        expires = "";
+    }
+    document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function getCookie(c_name) {
+    if (document.cookie.length > 0) {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1) {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) {
+                c_end = document.cookie.length;
+            }
+            return unescape(document.cookie.substring(c_start, c_end));
+        }
+    }
+    return "error";
+}
+function autoSave(){
+  createCookie('savedata', returnToJSON(), 9999);
+}
 
         </script>
         <!--REACTJS WORKSPACE-->
@@ -270,10 +341,11 @@
             <div class="modal-body">
                 <p>Name
                 <input text="name" id="mname" maxlength="20" required></p>
-            </div>
+                <button onclick="getPriceRecs()">GtPriceRecs</button>
+              </div>
             <div class="modal-footer">
                 <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
-                <button type="button" class="btn btn-default" onclick="var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName); rect2.addTo(graph);updateElementList();" data-dismiss="modal">Save</button>
+                <button type="button" class="btn btn-default" onclick="var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName); rect2.addTo(graph);updateElementList();" data-dismiss="modal"><font color="green">Save</font></button>
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
@@ -294,12 +366,12 @@
         <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
         <hr>
         <p>
-        <select id="typegas" name="typegas" onchange="updateOptions()">
+        <select id="typegas" name="typegas" onchange="updateOptions(); getGasBTUS()">
           <option value="nat">Natural</option>
             <option value="prop">Propane</option>
           </select> Gas</p>
           <p>Pressure Drop
-          <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities()">
+          <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities();getGasBTUS()">
             <option value="0.5 WC" id="0.5 WC">0.5 WC</option>
             <option value="1 WC" id="1 WC">1 WC</option>
             <option value="2.5 WC" id="2.5 WC" style="display: none">2.5 WC</option>
@@ -310,7 +382,7 @@
             <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>
           </select></p>
         <p>Pipe Diameter
-        <select id="allPipeDiam" onclick="getGasLengthPossibilities()">
+        <select id="allPipeDiam" onclick="getGasLengthPossibilities();getGasBTUS()">
             <option value="1">1</option>
             <option value="3/8">3/8</option>
             <option value="1/2">1/2</option>
@@ -320,11 +392,12 @@
            inches
           </p>
         <p>Run Length: 
-        <select id="allLengths">
+        <select id="allLengths" onclick="getGasBTUS()">
         </select>
         feet</p>
         <script>
             getGasLengthPossibilities();
+            getGasBTUS();
         </script>
             <script>
               function updateOptions(){
@@ -337,8 +410,7 @@
               }
             </script>
         <hr>
-        <button onclick="getGasBTUS()">Get BTU Requirements</button>
-      <br><h3> <b>BTU Requirements: <h3 id="btutext">N/A</h3></b></h3>
+      <h3> <b>BTU Requirements: <h3 id="btutext">N/A</h3></b></h3>
     </div>
     <div class="modal-footer">
         <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
@@ -444,7 +516,7 @@
               <h4 class="modal-title">Pricing</h4>
             </div>
             <div class="modal-body">
-                  <iframe src="{{ url_for('products') }}" frameBorder="0" style="width: 100%;" height="500"></iframe>
+                  <iframe src="{{ url_for('products') }}" frameBorder="0" style="width: 100%;" height="400"></iframe>
                 <script>
                     function searchData() {
                     // Declare variables
@@ -486,9 +558,9 @@
               <h4 class="modal-title">Delete Element</h4>
             </div>
             <div class="modal-body">
-                <h2>Delete "<span id="delText"></span>" </h2>
-                <button onclick="returnElementByName(getSelectedElement()).remove();updateElementList();" data-dismiss="modal">Delete</button>
-                 
+              <center>
+                <button class="btn btn-default"  style="height:50px;width:200px;text-align: center;"  onclick="returnElementByName(getSelectedElement()).remove();updateElementList();" data-dismiss="modal"> Delete "<span id="delText"></span>"  </button>
+              </center>
             </div>
             <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
@@ -505,6 +577,7 @@
         var namespace = joint.shapes;
         //Create new graph
         var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+
         var paper = new joint.dia.Paper({
             el: document.getElementById('myholder'),
             model: graph,
@@ -518,7 +591,7 @@
             cellViewNamespace: namespace
         });
 
-        var rect = new joint.shapes.standard.Rectangle();
+       var rect = new joint.shapes.standard.Rectangle();
         rect.position(100, 30);
         rect.resize(100, 40);
         rect.attr({
@@ -546,7 +619,10 @@
 
         // Listen for window resize events and update the paper size accordingly
         window.addEventListener('resize', adjustPaperSize);
-
+        if  (getCookie('savedata') != "error"){
+            jsondata = JSON.parse(getCookie('savedata'));
+            graph.fromJSON(jsondata);
+        }
     </script>
 <iframe id="hotbar" style="position: fixed;bottom: 0;" width="100%" height="20%" frameBorder="0" float="center" src="{{ url_for('hotbar') }}" ></iframe>
 
@@ -554,8 +630,10 @@
 
 <script>
 console.log("UpdateElement");
+
 setInterval(updateCurrentSelectedDOC);
 setInterval(highlightSelectedElement, 500);
+setInterval(autoSave, 1000);
 </script>
 <script>
     updateElementList(); //This must be here because the DOM element hasn't been created so cannot be invoked yet.
@@ -570,19 +648,19 @@ setInterval(highlightSelectedElement, 500);
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 <script>
   function updatePipesOptionEdit(){
-    window.alert("ello init");
     var e = getAllLinks();
     console.log("Erm");
     console.log(e);
   }
+  updateElementList();
  </script>
 <button hidden onclick="updatePipesOptionEdit()" data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
 
 <br>
-<button hidden id="saveDesign" onclick="var name = window.prompt('Selelct a name for this design');downloadJsonFile(returnToJSON(), name)">Save Design</button>
+<button hidden id="saveDesign" onclick="var name = window.prompt('Select a name for this design');if (name) { downloadJsonFile(returnToJSON(), name)}">Save Design</button>
 <button hidden id="loadDesign" onclick="document.getElementById('getFile').click();">Load Design</button>
 <button hidden onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();updateElementList();}}">Delete All</button>
-
+<button hidden onclick="updateElementList();" id="updateList"></button>
 <input type="file" id="getFile" style="display: none">
 <script>
 const finput = document.getElementById('getFile');
@@ -603,6 +681,8 @@ finput.addEventListener('change', () => {
   };
   reader.readAsText(file); // Read the file as text.
 });
+updateElementList();
 </script>
+
 </body>
 </html>

@@ -111,6 +111,10 @@ def login():
 def getData():
     return send_file("static/data.json")
 
+@app.route("/p")
+def getPData():
+    return send_file("static/products.json")
+
 @app.route("/hotbar")
 def hotbar():
     return render_template("hotbar.html")
