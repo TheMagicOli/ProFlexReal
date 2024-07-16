@@ -123,5 +123,10 @@ def products():
 def editor():
     return render_template("dynamicPorts.html")
 
+@app.route("/mobile")
+def mobile():
+    return render_template("mobile.html")
+
+
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", host="0.0.0.0", port=8000)
