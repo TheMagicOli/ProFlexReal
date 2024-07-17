@@ -528,7 +528,20 @@ function autoSave(){
               </div>
               </div>
       </div>
-
+<!--PROJECT SETTINGS-->
+<div class="modal fade" id="projectmodal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Project Setting</h4>
+        </div>
+        <div class="modal-body">
+          <p>Theme: </p><select onclick="paper.background.color = 'rgb(247, 247, 224)'"><option>Default</option><option>White</option><option>Black</option></select>
+          <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button><button class="btn btn-default" data-dismiss="modal"><font color="red">I'm Good</font></button>
+          </div>
+        </div>
+        </div>
+</div>
        <!--PRICE SHEET ELEMENT-->
     <div class="modal fade" id="priceSheet" role="dialog">
         <div class="modal-dialog">
@@ -648,6 +661,7 @@ setInterval(autoSave, 1000);
 <button hidden id="newPipe" data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
 <button hidden id="priceSheetBT" data-toggle="modal" data-target="#priceSheet" onclick="getPriceRecs()"></button>
 <button hidden id="deleteBT" data-toggle="modal" data-target="#deleteMenu">e</button>
+<button hiden id="projectSettings" data-toggle="modal" data-target="#projectModal"></button>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 <script>
   function updatePipesOptionEdit(){
@@ -665,6 +679,7 @@ setInterval(autoSave, 1000);
 <button hidden onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();updateElementList();}}">Delete All</button>
 <button hidden onclick="updateElementList();" id="updateList"></button>
 <button hidden id="tutorialBtn" data-toggle="modal" data-target="#tutorialPopup"></button>
+<button hidden id="projectSettings" data-toggle="modal" data-target="#"
 <input type="file" id="getFile" style="display: none">
 <script>
 const finput = document.getElementById('getFile');
