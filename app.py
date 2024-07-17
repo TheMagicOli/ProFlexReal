@@ -119,6 +119,10 @@ def getPData():
 def hotbar():
     return render_template("hotbar.html")
 
+@app.route("/docs")
+def docs():
+    return render_template("docs.html")
+
 @app.route("/products")
 def products():
     return render_template("products.html")

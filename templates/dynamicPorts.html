@@ -137,19 +137,28 @@
                           allLinks.push(all[i]["attributes"]["labels"][0]["attrs"]);
                         }
                       }
+                      totalCost = 0;
+                      allProducts = document.getElementById("priceplan");
+                      allProducts.innerHTML = "";
                       for (i = 0; i < allLinks.length; ++i) {
                         console.log(allLinks[i]);
                         var gasDict = data[allLinks[i]["typeGas"]];
                         var dataforPipe = gasDict[allLinks[i]["pipeDiam"]];
                         optimalProductName = "No Product Available";
+                        optimalProductPrice = "0";
                         for (const [key, value] of Object.entries(dataforPipe)) {
                           console.log("key: " + key)
                           console.log("len: " + allLinks[i]["length"] )
                           if (parseInt(key) > parseInt(allLinks[i]["length"]))
-                          {console.log('optimal is ' + value.name);optimalProductName=value.name;break;}
+                          {console.log('optimal is ' + value.name);optimalProductName=value.name;optimalProductPrice=value.cost;totalCost += Number(value.cost); break;}
                         }
-                        window.alert(optimalProductName);
+                        var li = document.createElement('code');
+                        li.innerText = "\n" + optimalProductName + " - $" + optimalProductPrice +  "\n";
+                        li.value = i;
+                        allProducts.appendChild(li);
+                        console.log(totalCost);
                       }
+                      document.getElementById("finalCost").innerHTML = "Total - $" + Number(totalCost.toFixed(2)).toString();
                   }
                   function findClosestHighestValue(dictionary, x) {
     let closestHigherKey = null;
@@ -341,7 +350,6 @@ function autoSave(){
             <div class="modal-body">
                 <p>Name
                 <input text="name" id="mname" maxlength="20" required></p>
-                <button onclick="getPriceRecs()">GtPriceRecs</button>
               </div>
             <div class="modal-footer">
                 <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
@@ -506,41 +514,36 @@ function autoSave(){
           
         </div>
       </div>
+      <!--TUTORIAL POPUP-->
+      <div class="modal fade" id="tutorialPopup" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Welcome</h4>
+              </div>
+              <div class="modal-body">
+                <p>Welcome to ProFlexPlanner.<br><br> If this is your first time using this program, we recommend taking a look at the tutorial.<br><br>If you want to get to this page again, click the help button on the hotbar below.</p>
+                <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button><button class="btn btn-default" data-dismiss="modal"><font color="red">I'm Good</font></button>
+                </div>
+              </div>
+              </div>
+      </div>
 
        <!--PRICE SHEET ELEMENT-->
     <div class="modal fade" id="priceSheet" role="dialog">
         <div class="modal-dialog">
         
-          <div class="modal-content"">
+          <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title">Pricing</h4>
             </div>
             <div class="modal-body">
-                  <iframe src="{{ url_for('products') }}" frameBorder="0" style="width: 100%;" height="400"></iframe>
-                <script>
-                    function searchData() {
-                    // Declare variables
-                    var input, filter, table, tr, td, i, txtValue;
-                    input = document.getElementById("myInput");
-                    filter = input.value.toUpperCase();
-                    table = document.getElementById("myTable");
-                    tr = table.getElementsByTagName("tr");
+              <span id="priceplan">
 
-                    // Loop through all table rows, and hide those who don't match the search query
-                    for (i = 0; i < tr.length; i++) {
-                        td = tr[i].getElementsByTagName("td")[0];
-                        if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } else {
-                            tr[i].style.display = "none";
-                        }
-                        }
-                    }
-                    }
-                </script>
-                 
+              </span>     
+ 
+              <hr><font color="#1B5A95"> 
+              <h3  id="finalCost"></h3>      </font>    
             </div>
             <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
@@ -643,7 +646,7 @@ setInterval(autoSave, 1000);
 
 <button hidden id="newElement" data-toggle="modal" data-target="#newElModal">New Element</button>
 <button hidden id="newPipe" data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
-<button hidden id="priceSheetBT" data-toggle="modal" data-target="#priceSheet"></button>
+<button hidden id="priceSheetBT" data-toggle="modal" data-target="#priceSheet" onclick="getPriceRecs()"></button>
 <button hidden id="deleteBT" data-toggle="modal" data-target="#deleteMenu">e</button>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 <script>
@@ -661,6 +664,7 @@ setInterval(autoSave, 1000);
 <button hidden id="loadDesign" onclick="document.getElementById('getFile').click();">Load Design</button>
 <button hidden onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();updateElementList();}}">Delete All</button>
 <button hidden onclick="updateElementList();" id="updateList"></button>
+<button hidden id="tutorialBtn" data-toggle="modal" data-target="#tutorialPopup"></button>
 <input type="file" id="getFile" style="display: none">
 <script>
 const finput = document.getElementById('getFile');
@@ -682,6 +686,11 @@ finput.addEventListener('change', () => {
   reader.readAsText(file); // Read the file as text.
 });
 updateElementList();
+</script>
+<script> //Trigger tutorial
+  if (getCookie("hasDoneTutorial") == "error"){
+    document.getElementById("tutorialBtn").click();
+  }
 </script>
 
 </body>
