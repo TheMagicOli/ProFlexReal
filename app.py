@@ -60,53 +60,13 @@ def load_user(user):
 ###### Home index /
 @app.route('/') #Returns home HTML file
 def index():
-    if current_user.is_authenticated:
-        return render_template("main.html")
-    else:
-        return render_template("loginask.html")
+        return render_template("dynamicPorts.html")
 
 
 ##############################
 # FIle Manager Configuration #
 ##############################
-    
-def getstrEPOCHtime():
-    return str(time.time())
 
-
-@app.route("/login/callback")
-def callback(): #This callback is complicated and tehnical. Here's the basic idea.
-    code = request.args.get("code") #Here, we're trying to get the auth code that Google gave us to verify their identity.
-    googleProviderCFG = getGoogleProviderCFG() #We're going to now verify their code with Google themselves
-    tokenEndpoint =googleProviderCFG["token_endpoint"]
-    #This block of code is the token request to Google
-    #I'm mostly copying this from a code snippet, this is a complicated backend communication
-    tokenURL, headers, body = client.prepare_token_request(
-        tokenEndpoint,
-        authorization_response=request.url,
-        redirect_url=request.base_url,
-        code=code
-    )
-    tokenResponse - requests.post(
-        tokenURL,
-        headers=headers,
-        data=body,
-        auth=(GOOGLECLIENTID, GOOGLECLIENTSECRET)
-    )
-    client.parse_request_body_response(json.dumps(tokenResponse.json()))
-    return render_template("redirect.html")
-    
-@app.route('/login')
-def login():
-    googleProviderCFG = getGoogleProviderCFG()
-    authEndpoint = googleProviderCFG["authorization_endpoint"]
-    #This prepares the request for google that gets the user's Google Profile
-    request_uri = client.prepare_request_uri(
-        authEndpoint,
-        redirect_uri="https://127.0.0.1:500/login/callback", #The callback url to this app.
-        scope=["openid", "email", "profile"]
-    )
-    return redirect(request_uri)
 @app.route("/d")
 def getData():
     return send_file("static/data.json")

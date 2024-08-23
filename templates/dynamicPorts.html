@@ -150,15 +150,16 @@
                           console.log("key: " + key)
                           console.log("len: " + allLinks[i]["length"] )
                           if (parseInt(key) >= parseInt(allLinks[i]["length"]))
-                          {console.log('optimal is ' + value.name);optimalProductName=value.name;optimalProductPrice=value.cost;totalCost += Number(value.cost); break;}
+                          {optimalProductName=value.name;optimalProductPrice=value.cost;totalCost += Number(value.cost); break;}
                         }
-                        var li = document.createElement('code');
+                        var li = document.createElement('h4');
                         li.innerText = "\n" + optimalProductName + " - $" + optimalProductPrice +  "\n";
                         li.value = i;
+                        console.log(li);
                         allProducts.appendChild(li);
                         console.log(totalCost);
                       }
-                      document.getElementById("finalCost").innerHTML = "Total - $" + Number(totalCost.toFixed(2)).toString();
+                      document.getElementById("finalCost").innerHTML = "<br>Total - $" + Number(totalCost.toFixed(2)).toString();
                   }
                   function findClosestHighestValue(dictionary, x) {
     let closestHigherKey = null;
@@ -224,6 +225,8 @@
                       //Function that returns all links on the current selected element and then applies each one to the option in the Edit Menu
                       var all =  graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true });
                       pipelist = document.getElementById("portedit");
+                      pipelist.innerHTML = "";
+                      didLoop = false;
                       for (i = 0; i < all.length; ++i) {
                         console.log(all[i]["attributes"]["labels"][0]["attrs"]);
                         console.log(all[i]["attributes"]["labels"][0]["attrs"]["text"]["text"]);
@@ -231,6 +234,10 @@
                         li.innerText = all[i]["attributes"]["labels"][0]["attrs"]["text"]["text"].replace(/(\r\n|\n|\r)/gm, " - ");
                         li.value = i;
                         pipelist.appendChild(li);
+                        didLoop = true;
+                      }
+                      if (!didLoop){
+                        pipelist.innerHTML = "<option>No Pipes Connected</option>"
                       }
                     }
                     function deleteLinkByNum(num){
@@ -353,7 +360,7 @@ function autoSave(){
               </div>
             <div class="modal-footer">
                 <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
-                <button type="button" class="btn btn-default" onclick="var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName); rect2.addTo(graph);updateElementList();" data-dismiss="modal"><font color="green">Save</font></button>
+                <button type="button" class="btn btn-default" onclick="var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName);  rect2.addTo(graph);updateElementList();" data-dismiss="modal"><font color="green">Save</font></button>
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
@@ -462,8 +469,6 @@ function autoSave(){
                 <select id="allAttributes">
                   <option value="label/text">Name</option>
                   <option value="label/fill">Text Color</option>
-                  <option value="x">X Position</option>
-                  <option value="y">Y Position</option>
                 </select>
                 <select id="colorvalue">
                   <option value="white">White</option>
@@ -480,11 +485,18 @@ function autoSave(){
                   }
                   setInterval(updateTypeSel);
                 </script>
-              <p>Delete Ports</p>
+              <button onclick="var curEl = returnElementByName(getSelectedElement()); curEl.position(0, 0);">Reset Position</button>
+              <br>
               <select id="portedit">
-
+                <option>None</option>
               </select>
               <button onclick="deleteLinkByNum(document.getElementById('portedit').value)" class="btn btn-default" data-dismiss="modal">Delete Link</button>
+              <br><hr>
+              <div align="center">
+                <font color="red">
+                  <button class="btn btn-default"  style="height:50px;width:200px;text-align: center;"  onclick="returnElementByName(getSelectedElement()).remove();updateElementList();" data-dismiss="modal"> Delete "<span id="delText"></span>"  </button>
+                </font>
+              </div>
               <!--  <p>Position: X</p>
                 <input type="number" min=0 id="xinput" value=0 inputmode="numeric" pattern="[0-9]+">
                  <p>Position: Y</p>
@@ -507,7 +519,6 @@ function autoSave(){
                     e.attr(document.getElementById('allAttributes').value, document.getElementById('colorvalue').value);
                     }   
                     updateElementList();}"><font color="green">Save</font></button>
-                <button onclick="window.alert(returnToJSON())">Display JSON</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
@@ -539,10 +550,7 @@ function autoSave(){
       <div class="modal-header">
         <h4 class="modal-title">Settings</h4>
       </div>
-      <div class="modal-body">
-        <span id="priceplan">
-
-        </span>     
+      <div class="modal-body">    
         <button class="btn btn-default" onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();updateElementList();}}" data-dismiss="modal"><font color="red">Erase Project</font></button>
         <br><br> <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button>
       </div>
@@ -561,13 +569,13 @@ function autoSave(){
               <h4 class="modal-title">Pricing</h4>
             </div>
             <div class="modal-body">
-              <span id="priceplan">
+              <font color="red">
+              <div id="priceplan">
 
-              </span>     
- 
-              <hr><font color="#1B5A95"> 
+              </div>
+              <font color="#1B5A95"> 
               <h3  id="finalCost"></h3>      </font>    
-              <button class="btn btn-default" data-dismiss="modal" onclick="window.alert(document.getElementById('priceplan').innerHTML);window.location.href = '/printme?content=test'">Print Digital Estimate Receipt</button>
+              <button class="btn btn-default" data-dismiss="modal" onclick="window.location.href = '/printme?content=' +  document.getElementById('priceplan').innerHTML + '<br><h3><font color=\'red\'>' + document.getElementById('finalCost').innerHTML">Print Digital Estimate Receipt</button>
             </div>
             <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
@@ -650,6 +658,11 @@ function autoSave(){
             jsondata = JSON.parse(getCookie('savedata'));
             graph.fromJSON(jsondata);
         }
+        paper.on('cell:pointerdown', 
+        function(cellView, evt, x, y) { 
+              console.log(cellView["options"])
+          }
+      );
     </script>
 <iframe id="hotbar" style="position: fixed;bottom: 0;" width="100%" height="20%" frameBorder="0" float="center" src="{{ url_for('hotbar') }}" ></iframe>
 
@@ -690,8 +703,8 @@ setInterval(autoSave, 1000);
 <button hidden onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();updateElementList();}}">Delete All</button>
 <button hidden onclick="updateElementList();" id="updateList"></button>
 <button hidden id="tutorialBtn" data-toggle="modal" data-target="#tutorialPopup"></button>
-<button hidden id="projectSettings" data-toggle="modal" data-target="#"
-<input type="file" id="getFile" style="display: none">
+<button hidden id="projectSettings" data-toggle="modal" data-target="#"></button>
+<input type="file" id="getFile" accept=".pfxds" style="display: none">
 <script>
 const finput = document.getElementById('getFile');
 const reader = new FileReader(); // Create the FileReader instance.
