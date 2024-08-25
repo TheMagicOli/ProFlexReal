@@ -15,7 +15,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='favicon.ico') }}">
+   <!-- <meta name="viewport" maximum-scale=1  content="width=device-width, initial-scale=1.0">-->
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
+    <!-- Add to home screen-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='addtohomescreen.css') }}">
+    <script src="{{ url_for('static', filename='addtohomescreen.js') }}"></script>
     <!-- iPhone Xs Max (1242px x 2688px) --> 
 <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" href="/apple-launch-1242x2688.png">
 <!-- iPhone Xr (828px x 1792px) --> 
@@ -35,16 +40,17 @@
 <!-- iPad Mini, Air (1536px x 2048px) --> 
 <link rel="apple-touch-startup-image" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="/apple-launch-1536x2048.png">
 
-<meta name="apple-mobile-web-app-title" content="ProFlexPlanner">
+<meta name="apple-mobile-web-app-title" content="ProFlexTinker">
 
 <style>
     body {
    -webkit-touch-callout: none;
 }
 </style>
-    <title>ProFlex Editor</title>
+    <title>ProFlexTinker</title>
 </head>
     <body>
+        <script>addToHomescreen();</script>
         <noscript>
             <h1>This app requires JavaScript to function</h1>
         </noscript>

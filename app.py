@@ -18,7 +18,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return render_template("dynamicPorts.html")
+    return render_template("editor.html")
 
 @app.route('/webapp')
 def test():
@@ -60,7 +60,7 @@ def load_user(user):
 ###### Home index /
 @app.route('/') #Returns home HTML file
 def index():
-        return render_template("dynamicPorts.html")
+        return render_template("editor.html")
 
 
 ##############################
@@ -94,12 +94,31 @@ def products():
 
 @app.route("/editor")
 def editor():
-    return render_template("dynamicPorts.html")
+    return render_template("editor.html")
 
 @app.route("/mobile")
 def mobile():
     return render_template("mobile.html")
 
+@app.route("/click.mp3")
+def click():
+    return send_file("static/click.mp3")
+
+@app.route("/click2.wav")
+def click2():
+    return send_file("static/click2.wav")
+
+@app.route("/err.wav")
+def err():
+    return send_file("static/err.wav")
+
+@app.route("/delete.mp3")
+def delete():
+    return send_file("static/delete.mp3")
+
+@app.route("/make.mp3")
+def make():
+    return send_file("static/make.mp3")
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", host="0.0.0.0", port=8000)

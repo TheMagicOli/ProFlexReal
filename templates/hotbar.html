@@ -6,11 +6,17 @@
 @import "https://unpkg.com/open-props/open-props.min.css";
 
 :root {
-  --lerp-0: 0.4; /* === sin(90deg) */
-  --lerp-1: 0.3;
-  --lerp-2: 0.2;
+  --lerp-0: 0.1; /* === sin(90deg) */
+  --lerp-1: 0.1;
+  --lerp-2: 0.1;
   --lerp-3: 0.1;
-  --lerp-4: 0;
+  --lerp-4: 0.1;
+  --lerp-5: 0.1;
+  --lerp-6: 0.1;
+  --lerp-7: 0.1;
+  --lerp-8: 0.1;
+  --lerp-9: 0.1;
+
 }
 
 *,
@@ -32,7 +38,7 @@ body {
   place-items: center;
   min-height: 100vh;
   font-family:  'Google Sans', sans-serif, system-ui;
-  background: var(--gradient-6);
+  background: rgb(255,255,255);
 }
 
 /*:root {
@@ -43,15 +49,15 @@ body {
   --lerp-4: 0;
 }*/
 
-.block:nth-of-type(1){--hue: 10;}
-.block:nth-of-type(2){--hue: 210;}
-.block:nth-of-type(3){--hue: 290;}
-.block:nth-of-type(4){--hue: 340;}
+.block:nth-of-type(1){--hue: 30;}
+.block:nth-of-type(2){--hue: 30;}
+.block:nth-of-type(3){--hue: 30;}
+.block:nth-of-type(4){--hue: 30;}
 .block:nth-of-type(5){--hue: 30;}
-.block:nth-of-type(6){--hue: 220;}
-.block:nth-of-type(7){--hue: 320;}
-.block:nth-of-type(8){--hue: 280;}
-.block:nth-of-type(9){--hue: 240;}
+.block:nth-of-type(6){--hue: 30;}
+.block:nth-of-type(7){--hue: 30;}
+.block:nth-of-type(8){--hue: 30;}
+.block:nth-of-type(9){--hue: 30;}
 
 .blocks {
   display: flex;
@@ -85,7 +91,7 @@ body {
   max-width: 100px;
   position: relative;
 }
-
+/*
 .block:after {
   content: '';
   width: 5%;
@@ -110,7 +116,7 @@ body {
   transform-origin: 50% 100%;
   transform: translateX(-50%) scaleY(var(--show, 0));
   z-index: -1;
-}
+}*/
 
 .block .block__item {
   transition: outline 0.2s;
@@ -153,10 +159,13 @@ body {
 /*@media(prefers-color-scheme: dark) {
 }*/
 body {
-  background: var(--gradient-23);
+  background: rgb(220,220,220);
 }
 .blocks {
   background: hsl(0 0% 0% / 0.5);
+  width: 50%;
+  height: 50%;
+  position: absolute;
 }
 
 
@@ -191,7 +200,7 @@ body {
 </style>
 <body>
 <nav class="blocks" float="bottom">
-  <select id="UnList6"><option>Gas Source</option></select>
+  <select hidden id="UnList6"><option>Gas Source</option></select>
   <script>
     parent.document.getElementById('updateList').click()
   </script>
