@@ -1,0 +1,780 @@
+<!---PROFLEX PRE RELASE
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <script src="https://cdn.jsdelivr.net/npm/@joint/core@4.0.1/dist/joint.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <meta charset="utf-8">
+
+</head>
+    <body>
+        <noscript>
+            <h1>This app requires JavaScript to function</h1>
+        </noscript> -->
+        {% include "head.html" %}
+        <!--DETECT IF USER RUNS IOS-->
+<script>
+        function iOS() {
+          return [
+            'iPad Simulator',
+            'iPhone Simulator',
+            'iPod Simulator',
+            'iPad',
+            'iPhone',
+            'iPod'
+          ].includes(navigator.platform)
+          // iPad on iOS 13 detection
+          || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+        }
+        if (iOS()){window.location.href = "{{ url_for('mobile') }}"}
+</script>
+<audio id="clicksfx"><source src="/click.mp3" type="audio/ogg">
+</audio>
+<audio id="delsfx"><source src="/delete.mp3" type="audio/ogg"></audio>
+<audio id="makesfx"><source src="/make.mp3" type="audio/ogg"></audio>
+<audio id="click2sfx"><source src="/click2.wav" type="audio/ogg"></audio>
+<audio id="errsfx" volume="0.1"><source src="/err.wav" type="audio/ogg"></audio>
+
+
+        <!--ALL FUNCTIONS AND COMMENTS-->
+        <script>
+                    //Resets X value in EditElement to always be = or > 0
+                    function resetXY(){
+                        try{
+                            //Gets element by id and then sets it to 0
+                            if (document.getElementById('xinput').value < 0){
+                                document.getElementById('xinput').value = 0;
+                            }
+                            if (document.getElementById('yinput').value < 0){
+                                document.getElementById('yinput').value = 0;
+                            }
+                        }
+                        catch (ex){
+                            //pass
+                        }
+                    }
+                    //setInterval updates every available ms
+                    setInterval(resetXY);
+                    
+                    //allList returns the graph in a JSON object
+                    function returnToJSON(){
+                        return JSON.stringify( graph.toJSON());
+                    }
+
+                    //Changes all elements (as of 0.1) that display the current sel element in their .innerHTML
+                    function updateCurrentSelectedDOC(){
+                      
+                     var iframe = document.getElementById('hotbar');
+                     // var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+                      document.getElementById("editsel").innerHTML = 'Edit ' + iframe.contentWindow.document.getElementById("UnList6").value + '';
+                      document.getElementById("delText").innerHTML = iframe.contentWindow.document.getElementById("UnList6").value;
+                      document.getElementById('titleText').innerHTML = 'Edit <font color="red"> ' + iframe.contentWindow.document.getElementById("UnList6").value + '</font>';
+                    //  document.getElementById("editsel").innerHTML = 'Edit ' + document.getElementById("UnList").value + '';
+                   //   document.getElementById("delText").innerHTML = document.getElementById("UnList").value;
+                    }
+
+                    //returns the object of an element based on the name of the string that's created
+                    function returnElementByName(nameString){
+                            //get all Models and iterate through them, adding only their label/text attr to the array
+                            var allModels = graph.get('cells').models;
+                            for(var i = 0; i < allModels.length; i++) {
+                                var e = allModels[i];
+                                if (e.attr('label/text') == nameString){
+                                    return e;
+                                }
+                            }
+                            return false;
+                    }
+
+                function updateLengths(data){//Returns the BTU requirements on ProFlex based on data.json through the 
+                    typeGas = "propane";
+                    if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
+                    if (document.getElementById("typegas").value == "prop"){var typeGas = "propane";} //Evals gas type
+                    pressureDrop = document.getElementById("pressuredrop").value;
+                    pipeSizing = document.getElementById("allPipeDiam").value
+                    allLengths =  data[typeGas][pressureDrop][pipeSizing];
+                    newlist = document.getElementById("allLengths");
+                    newlist.innerHTML = "";
+                    for (let i = 0; i < Object.entries( allLengths).length; i++) {
+                        var li = document.createElement('option');
+                         li.innerHTML = Object.entries(allLengths)[i][0];
+                         li.value = Object.entries(allLengths)[i][0];
+                         newlist.appendChild(li);
+                    } 
+                }
+                function downloadJsonFile(jsonString, filename) {
+                  //Make a download link that it clicks
+                    const dataUri = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonString);
+                    const anchor = document.createElement('a');
+                    anchor.href = dataUri;
+                    anchor.download = filename + '.pfxds';
+                    anchor.style.display = 'none';
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    document.body.removeChild(anchor);
+                }
+                    function getGasLengthPossibilities(){
+                        fetch('/d')
+                        .then((response) => response.json())
+                        .then((json) => updateLengths(json));//Very long conditional that finds the correct value based on pressure drop/type
+                    }
+                    function getGasBTUS(){
+                        fetch('/d')
+                        .then((response) => response.json())
+                        .then((json) => returnBTUS(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                    }
+                    function getPriceRecs(){
+                      fetch('/p')
+                        .then((response) => response.json())
+                        .then((json) => getRecommendedPricePlan(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                    }
+                    function getRecommendedPricePlan(data){
+                      //Function that returns all links on the current selected element and then applies each one to the option in the Edit Menu
+                      graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true });
+                      all = graph.get('cells').models;
+                      allLinks = [];
+                      for(var i = 0; i < all.length; i++) { //First get list of elements.
+                        if (all[i]["attributes"]["type"] == "standard.Link"){
+                          allLinks.push(all[i]["attributes"]["labels"][0]["attrs"]);
+                        }
+                      }
+                      totalCost = 0;
+                      allProducts = document.getElementById("priceplan");
+                      allProducts.innerHTML = "";
+                      for (i = 0; i < allLinks.length; ++i) {
+                        var gasDict = data[allLinks[i]["typeGas"]];
+                        var dataforPipe = gasDict[allLinks[i]["pipeDiam"]];
+                        optimalProductName = "No Product Available";
+                        optimalProductPrice = "0";
+                        for (const [key, value] of Object.entries(dataforPipe)) {
+                          if (parseInt(key) >= parseInt(allLinks[i]["length"]))
+                          {optimalProductName=value.name;optimalProductPrice=value.cost;totalCost += Number(value.cost); break;}
+                        }
+                        var li = document.createElement('h4');
+                        li.innerText = "\n" + optimalProductName + " - $" + optimalProductPrice +  "\n";
+                        li.value = i;
+                        allProducts.appendChild(li);
+                      }
+                      document.getElementById("finalCost").innerHTML = "<br>Total - $" + Number(totalCost.toFixed(2)).toString();
+                  }
+                  function findClosestHighestValue(dictionary, x) {
+    let closestHigherKey = null;
+    for (const key in dictionary) {
+        if (parseInt(key) > x) {
+            if (!closestHigherKey || parseInt(key) < parseInt(closestHigherKey)) {
+                closestHigherKey = key;
+            }
+        }
+    }
+    return closestHigherKey ? dictionary[closestHigherKey] : null;
+}
+                    function returnBTUS(data){
+                        if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
+                        if (document.getElementById("typegas").value == "prop"){var typeGas = "propane";} //Evals gas type
+                        pressureDrop = document.getElementById("pressuredrop").value;
+                         pipeSizing = document.getElementById("allPipeDiam").value;
+                         pipeLengthRun = document.getElementById("allLengths").value;
+                         final  =  data[typeGas][pressureDrop][pipeSizing][pipeLengthRun];
+                         document.getElementById("btutext").innerHTML = final;
+                    }
+                    function highlightSelectedElement(){
+                        let allModels = graph.get('cells').models;
+                        for(var i = 0; i < allModels.length; i++) {
+                            var f = allModels[i];
+                            f.attr("body/fill", "rgba(95, 95, 95, 1)");
+                        }
+                        let e = returnElementByName(getSelectedElement());
+                        e.attr("body/fill", "rgba(255, 163, 16, 1)");//232, 107, 107
+                    }
+                    function getSelectedElement(){
+                      var iframe = document.getElementById("hotbar");
+                      return iframe.contentWindow.document.getElementById("UnList6").options[iframe.contentWindow.document.getElementById('UnList6').selectedIndex ].value;
+                      //Old code
+                       // return document.getElementById('UnList').options[document.getElementById('UnList').selectedIndex ].value;
+                    }
+                    function setSelectedElement(stringName){
+                      var iframe = document.getElementById("hotbar");
+                      iframe.contentWindow.document.getElementById("UnList6").options[iframe.contentWindow.document.getElementById('UnList6').selectedIndex ].value = stringName;
+                    }
+                    //Creates a link between two elements, and sets both the attributes and changes
+                    function addLink(parentElement, childElement){
+
+                        let parent = returnElementByName(parentElement);
+                        let child = returnElementByName(childElement);
+                        let BTUs = document.getElementById("btutext").innerHTML;
+                        let length = document.getElementById("allLengths").value;
+                        let pipeDiam = document.getElementById("allPipeDiam").value;
+                        let typeGas = document.getElementById("typegas").value.toUpperCase();
+                        var link = new joint.shapes.standard.Link();
+                        link.source(parent);
+                        link.labels([{
+                            attrs: {
+                                BTUs: BTUs,
+                                length: length,
+                                pipeDiam: pipeDiam,
+                                typeGas: typeGas,
+                                text: {
+                                    text: typeGas+ " " +  pipeDiam +  " INCH\n" +length + " FEET\n" + BTUs + " BTUs"
+                                }
+                            }
+                        }]);
+                        link.target(child);
+                        link.addTo(graph); 
+                    }
+                    function getAllLinks(){
+                      //Function that returns all links on the current selected element and then applies each one to the option in the Edit Menu
+                      var all =  graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true });
+                      pipelist = document.getElementById("portedit");
+                      pipelist.innerHTML = "";
+                      didLoop = false;
+                      for (i = 0; i < all.length; ++i) {
+                        var li = document.createElement('option');
+                        li.innerText = all[i]["attributes"]["labels"][0]["attrs"]["text"]["text"].replace(/(\r\n|\n|\r)/gm, " - ");
+                        li.value = i;
+                        pipelist.appendChild(li);
+                        didLoop = true;
+                      }
+                      if (!didLoop){
+                        pipelist.innerHTML = "<option>No Pipes Connected</option>"
+                      }
+                    }
+                    function deleteLinkByNum(num){
+                      dellink =  graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true })[num];
+                      graph.removeCells([dellink]);
+                    }
+                    function toggleSFX(){
+                      var SFXState = getCookie("SFXEnabled");
+                      if (SFXState == "true"){
+                        createCookie("SFXEnabled", "false", 999999);
+                        }
+                      if (SFXState == "false"){
+                        createCookie("SFXEnabled", "true", 999999);
+                        }
+                      getAndUpdateSFXState();
+                    }
+                    //Checks and creates default SFX state and then updates audio to value
+                    function getAndUpdateSFXState(){
+                      var SFXState = getCookie("SFXEnabled");
+                      if (SFXState == "error"){
+                        createCookie("SFXEnabled", "true", 999999);
+                      }
+                      //Once created if not already, set HTML
+                      if (SFXState == "true"){
+                        document.getElementById("clicksfx").volume = 1;
+                        document.getElementById("click2sfx").volume = 1;
+                        document.getElementById("delsfx").volume = 1;
+                        document.getElementById("makesfx").volume = 1;
+                        document.getElementById("errsfx").volume = 0.2;
+                        console.log("TURE");
+
+                      }
+                      if (SFXState == "false"){
+                        document.getElementById("clicksfx").volume = 0;
+                        document.getElementById("click2sfx").volume = 0;
+                        document.getElementById("errsfx").volume = 0;
+                        document.getElementById("delsfx").volume = 0;
+                        document.getElementById("makesfx").volume = 0;
+                        console.log("FALS");
+                      }
+                    }
+                    //Updates the select input box(es) with the id UnList with all current non standard.Link elements
+                    function updateElementList(){
+                        //Access list, clear all HTMl inside of it
+                        let list = document.getElementById("UnList"); //Current selected 
+                        list.innerHTML = "";
+                       /* let list2 = document.getElementById("UnList2"); //Selection option for connect
+                        list2.innerHTML = "";*/ //Deprecated
+                        let list4 = document.getElementById("UnList4"); //Selection option for connect
+                        list4.innerHTML = "";
+                        let list5 = document.getElementById("UnList5"); //Selection option for connect
+                        list5.innerHTML = "";
+                        let list6 = document.getElementById("hotbar").contentWindow.document.getElementById("UnList6"); //Selection in hotbar
+                        list6.innerHTML = "";
+                        //get all Models and iterate through them, adding only their label/text attr to the array
+                        var allModels = graph.get('cells').models;
+                        let tempArray = [];
+
+                        for(var i = 0; i < allModels.length; i++) {
+                            var e = allModels[i];
+                            tempArray.push(e.attr('label/text'));
+                        }
+                        
+
+                        tempArray = tempArray.filter((element) => element !== undefined); //Remove all undefined standard.Link elements
+                        //TO FIX: each element has to be itereated sepeately for each list because if it append li to one, it doesn't to the other.
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list.appendChild(li);
+                            }
+                       /* for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list2.appendChild(li);
+                            } */ //Deprecated
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list4.appendChild(li);
+                            }
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list5.appendChild(li);
+                            }
+                            for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list6.appendChild(li);
+                            }
+                    }
+//from https://stackoverflow.com/questions/4825683/how-do-i-create-and-read-a-value-from-cookie-with-javascript
+function createCookie(name, value, days) {
+    var expires;
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toGMTString();
+    }
+    else {
+        expires = "";
+    }
+    document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function getCookie(c_name) {
+    if (document.cookie.length > 0) {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1) {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) {
+                c_end = document.cookie.length;
+            }
+            return unescape(document.cookie.substring(c_start, c_end));
+        }
+    }
+    return "error";
+}
+function autoSave(){
+  createCookie('savedata', returnToJSON(), 9999);
+}
+
+        </script>
+        <!--REACTJS WORKSPACE-->
+       <!----> <select hidden style="width:20%;" width="50%" id="UnList" class="customselect" float="position:absolute; bottom: 0; right: 0;z-index: 1000;"></select>
+        <input type="range" id="points" width="50" name="points" min="0" max="100" value=5 oninput="paper.scale(this.value*0.01+0.5,this.value*0.01+0.5);" float="position:absolute; bottom: 0; left: 0;z-index: 1000;">
+        <div id="myholder" align="right"></div> 
+        <!--TOOLBAR-->
+            
+        <!--ALL MODAL CLASSES-->
+        <!--NEW ELEMENT MODAL (id=newElModal)-->
+        <div class="modal fade" id="newElModal" role="dialog">
+            <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">New Element</h4>
+            </div>
+            <div class="modal-body">
+                <p>Name
+                <input text="name" id="mname" maxlength="20" required></p>
+              </div>
+            <div class="modal-footer">
+                <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+                <button type="button" class="btn btn-default" onclick="if(returnElementByName(document.getElementById('mname').value) == false){document.getElementById('makesfx').play();var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName);  rect2.addTo(graph);updateElementList();}else{document.getElementById('errsfx').play();window.alert('Name is already in use! Please choose a new element name');document.getElementById('newElement').click()}" data-dismiss="modal"><font color="green">Save</font></button>
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPipeModal" role="dialog">
+    <div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4 class="modal-title">New Pipe</h4>
+    </div>
+    <div class="modal-body">
+        <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
+        <hr>
+        <p>
+        <select id="typegas" name="typegas" onchange="updateOptions(); getGasBTUS()">
+          <option value="nat">Natural</option>
+            <option value="prop">Propane</option>
+          </select> Gas</p>
+          <p>Pressure Drop
+          <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities();getGasBTUS()">
+            <option value="0.5 WC" id="0.5 WC">0.5 WC</option>
+            <option value="1 WC" id="1 WC">1 WC</option>
+            <option value="2.5 WC" id="2.5 WC" style="display: none">2.5 WC</option>
+            <option value="3 WC" id="3 WC">3 WC</option>
+            <option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option>
+            <option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option>
+            <option value="1 PSIG" id="1 PSIG">1 PSIG</option>
+            <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>
+          </select></p>
+        <p>Pipe Diameter
+        <select id="allPipeDiam" onclick="getGasLengthPossibilities();getGasBTUS()">
+            <option value="1">1</option>
+            <option value="3/8">3/8</option>
+            <option value="1/2">1/2</option>
+            <option value="3/4">3/4</option>
+            <option value="1 1/4">1 1/4</option>
+          </select>
+           inches
+          </p>
+        <p>Run Length: 
+        <select id="allLengths" onclick="getGasBTUS()">
+        </select>
+        feet</p>
+        <script>
+            getGasLengthPossibilities();
+            getGasBTUS();
+        </script>
+            <script>
+              function updateOptions(){
+                if (document.getElementById("typegas").value == "nat"){
+                  document.getElementById("pressuredrop").innerHTML = '            <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="1 WC" id="1 WC">1 WC</option><option value="3 WC" id="3 WC">3 WC</option><option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option><option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
+                }
+                if (document.getElementById("typegas").value == "prop"){
+                  document.getElementById("pressuredrop").innerHTML = ' <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="2.5 WC" id="2.5 WC">2.5 WC</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
+                }
+              }
+            </script>
+        <hr>
+      <h3> <b>BTU Requirements: <h3 id="btutext">N/A</h3></b></h3>
+    </div>
+    <div class="modal-footer">
+        <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+        <button type="button" class="btn btn-default" onclick="document.getElementById('clicksfx').play();addLink(document.getElementById('UnList4').value, document.getElementById('UnList5').value)" data-dismiss="modal"><font color="green">New Pipe</font></button>
+      <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+    </div>
+  </div>
+  
+</div>
+</div>
+</div>
+</div>
+</div>
+    <!--EDIT CURRENT SEL ELEMENT MODAL (id=selEditModal)-->
+    <div class="modal fade" id="selEditModal" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="titleText">Edit Current Element</h4>
+            </div>
+            <div class="modal-body">
+                <!---Code to make sure x is not a neg number-->
+                <script>
+                    //Resets by every ms getting the value of x and y and reseting them so they cannot be set to a number less than 0
+                    function resetXY(){
+                        try {
+                            if (document.getElementById('xinput').value < 0){
+                                document.getElementById('xinput').value = 0;
+                            }
+                            if (document.getElementById('yinput').value < 0){
+                                document.getElementById('yinput').value = 0;
+                            }
+                        }
+                        catch (e){
+                            //pass
+                        }
+                    }
+                    setInterval(resetXY);
+                </script>
+                <select id="allAttributes">
+                  <option value="label/text">Name</option>
+                  <option value="label/fill">Text Color</option>
+                </select>
+                <select id="colorvalue">
+                  <option value="white">White</option>
+                  <option value="blue">Blue</option>
+                  <option value="red">Red</option>
+                  <option value="yellow">Yellow</option>
+                  <option value="purple">Purple</option>
+                  <option value="green">Green</option>
+                  <option value="black">Black</option>
+                  <option value="gray">Gray</option>
+
+                </select>
+                <input float="left" id="changevalue">
+                <script>
+                  function updateTypeSel(){
+                    if (document.getElementById("allAttributes").value == "label/fill"){document.getElementById("changevalue").style.display = "none";document.getElementById("colorvalue").style.display = "inline"; };
+                    if (document.getElementById("allAttributes").value == "label/text"){document.getElementById("changevalue").style.display = "inline"; document.getElementById("colorvalue").style.display = "none";};
+                  //  if (document.getElementById("allAttributes").value == "body/fill"){document.getElementById("changevalue").style.display = "none"};
+
+                  }
+                  setInterval(updateTypeSel);
+                </script>
+              <br>
+              <br>
+              <select id="portedit">
+                <option>None</option>
+              </select>
+              <button onclick="document.getElementById('delsfx').play();deleteLinkByNum(document.getElementById('portedit').value)" class="btn btn-default" data-dismiss="modal">Delete Pipe</button>
+              <br>
+              <br>
+              <button class="btn btn-default" onclick=" var curEl = returnElementByName(getSelectedElement()); curEl.position(0, 0);">Reset Position</button>
+              <br>
+              <hr>
+              <div align="center">
+                <font color="red">
+                  <button class="btn btn-default"  style="height:50px;width:200px;text-align: center;"  onclick="if (window.confirm('Are you sure you want to delete this element?')){document.getElementById('delsfx').play();returnElementByName(getSelectedElement()).remove();updateElementList();}" data-dismiss="modal"> Delete "<span id="delText"></span>"  </button>
+                </font>
+              </div>
+              <!--  <p>Position: X</p>
+                <input type="number" min=0 id="xinput" value=0 inputmode="numeric" pattern="[0-9]+">
+                 <p>Position: Y</p>
+                 <input type="number" min=0 value=0 inputmode="numeric" pattern="[0-9]+"><br>
+                 <p>.attr( <input type="text" id="attr">) = <input type="text" id="changevalue"></p>
+                 <button onclick='addLink(getSelectedElement(), document.getElementById("UnList2").value)'>Connect To</button>
+                 <select id="UnList2"></select> -->
+                 
+            </div>
+            <script>
+                //Function to query all elements within a Graph object and return the correct one based on name (no 2 elements can have the same name)
+                let a = 1;
+            </script>
+            <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement());
+                   if (document.getElementById('allAttributes').value == 'label/text') {
+                    e.attr(document.getElementById('allAttributes').value, document.getElementById('changevalue').value);
+                  } 
+                  if (document.getElementById('allAttributes').value == 'label/fill') { 
+                    e.attr(document.getElementById('allAttributes').value, document.getElementById('colorvalue').value);
+                    }   
+                    updateElementList();}"><font color="green">Save Changes</font></button>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      <!--TUTORIAL POPUP-->
+      <div class="modal fade" id="tutorialPopup" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Welcome</h4>
+              </div>
+              <div class="modal-body">
+                <p>Welcome to ProFlexTinker.<br><br> If this is your first time using this program, we recommend taking a look at the tutorial.<br><br>If you want to get to this page again, click the help button on the hotbar below.</p>
+                <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button><button class="btn btn-default" data-dismiss="modal" onclick="createCookie('hasDoneTutorial', 'true', 99999)"><font color="red">I'm Good</font></button>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+                </div>
+              </div>
+              </div>
+      </div>
+    </div>
+<!--PROJECT SETTINGS-->
+<div class="modal fade" id="projectmodal" role="dialog">
+  <div class="modal-dialog">
+  
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Settings</h4>
+      </div>
+      <div class="modal-body">    
+        <button class="btn btn-default" id="togglesfxBT" onclick="toggleSFX()" data-dismiss="modal">Toggle Sound Effects</button>
+        <br><br><button class="btn btn-default" onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time (This project will be lost forever!)')){graph.clear();document.getElementById('delsfx').play();updateElementList();}}" data-dismiss="modal"><font color="red">Erase Project</font></button>
+        <br><br> <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button>
+      </div>
+    </div>
+    
+  </div>
+</div>
+</div>
+
+       <!--PRICE SHEET ELEMENT-->
+    <div class="modal fade" id="priceSheet" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Pricing</h4>
+            </div>
+            <div class="modal-body">
+              <font color="red">
+              <div id="priceplan">
+
+              </div>
+              <font color="#1B5A95"> 
+              <h3  id="finalCost"></h3>      </font>    
+              <button class="btn btn-default" data-dismiss="modal" onclick="window.location.href = '/printme?content=' +  document.getElementById('priceplan').innerHTML + '<br><h3><font color=\'red\'>' + document.getElementById('finalCost').innerHTML">Print Digital Estimate Receipt</button>
+            </div>
+            <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+<!---DELETE MENU-->
+      <div class="modal fade" id="deleteMenu" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Delete Element</h4>
+            </div>
+            <div class="modal-body">
+              <center>
+                <button class="btn btn-default"  style="height:50px;width:200px;text-align: center;"  onclick="returnElementByName(getSelectedElement()).remove();updateElementList();" data-dismiss="modal"> Delete "<span id="delText"></span>"  </button>
+              </center>
+            </div>
+            <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+
+
+      
+    <script type="text/javascript">
+        var namespace = joint.shapes;
+        //Create new graph
+        var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+
+        var paper = new joint.dia.Paper({
+            el: document.getElementById('myholder'),
+            model: graph,
+            width: 2000,
+            height: 500,
+            gridSize: 10,
+            drawGrid: true,
+            background: {
+                color: 'rgba(175, 186, 182, 0.3)'
+            },
+            cellViewNamespace: namespace
+        });
+
+       var rect = new joint.shapes.standard.Rectangle();
+        rect.position(100, 30);
+        rect.resize(100, 40);
+        rect.attr({
+            body: {
+                fill: 'rgba(167, 214, 212, 0.3)',
+            },
+            label: {
+                text: 'Gas Meter',
+                fill: 'white'
+            }
+        });
+        rect.addTo(graph);
+        paper.scale(1,1);
+        //Dynamically reize based on the users
+        function adjustPaperSize() {
+            const paperWidth = window.innerWidth; // Get the window width
+            const paperHeight = window.innerHeight; // Get the window height
+
+            // Set the paper size
+            paper.setDimensions(paperWidth, paperHeight/1.25);
+        }
+
+        // Call the function initially
+        adjustPaperSize();
+
+        // Listen for window resize events and update the paper size accordingly
+        window.addEventListener('resize', adjustPaperSize);
+        if  (getCookie('savedata') != "error"){
+            jsondata = JSON.parse(getCookie('savedata'));
+            graph.fromJSON(jsondata);
+        }
+      ;
+      paper.on('cell:pointerdown', 
+    function(cellView, evt, x, y) { 
+        //window.alert('cell view ' + cellView.model.id + ' was clicked'); 
+        document.getElementById('click2sfx').play();
+        setSelectedElement(cellView.model["attributes"]["attrs"]["label"]["text"]);
+      }
+);
+    </script>
+<iframe id="hotbar" style="position: fixed;bottom: 0;" width="100%" height="20%" frameBorder="0" float="center" src="{{ url_for('hotbar') }}" ></iframe>
+
+
+
+<script>
+
+setInterval(updateCurrentSelectedDOC);
+setInterval(highlightSelectedElement, 500);
+setInterval(autoSave, 1000);
+</script>
+<script>
+  getAndUpdateSFXState();
+    updateElementList(); //This must be here because the DOM element hasn't been created so cannot be invoked yet.
+    </script>    
+
+
+
+<button hidden id="newElement" data-toggle="modal" data-target="#newElModal">New Element</button>
+<button hidden id="newPipe" data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
+<button hidden id="priceSheetBT" data-toggle="modal" data-target="#priceSheet" onclick="getPriceRecs()"></button>
+<button hidden id="deleteBT" data-toggle="modal" data-target="#deleteMenu">e</button>
+<button hidden id="projectSettings" data-toggle="modal" data-target="#projectmodal"></button>
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<script>
+  function updatePipesOptionEdit(){
+    var e = getAllLinks();
+    document.getElementById("changevalue").value = getSelectedElement();
+  }
+  updateElementList();
+ </script>
+<button hidden onclick="updatePipesOptionEdit()" data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
+
+<br>
+<button hidden id="saveDesign" onclick="var name = window.prompt('Select a name for this design');if (name) { downloadJsonFile(returnToJSON(), name)}">Save Design</button>
+<button hidden id="loadDesign" onclick="document.getElementById('getFile').click();">Load Design</button>
+<button hidden onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();updateElementList();}}">Delete All</button>
+<button hidden onclick="updateElementList();" id="updateList"></button>
+<button hidden id="tutorialBtn" data-toggle="modal" data-target="#tutorialPopup"></button>
+<button hidden id="projectSettings" data-toggle="modal" data-target="#"></button>
+<input type="file" id="getFile" accept=".pfxds" style="display: none">
+<script>
+const finput = document.getElementById('getFile');
+const reader = new FileReader(); // Create the FileReader instance.
+
+finput.addEventListener('change', () => {
+  const file = finput.files[0];
+  if (!file) return; // No file selected or canceled.
+  if (!window.confirm("Loading a new design  will replace the current design. \n\nAre you sure you want to erase this design? ALL UNSAVED CHANGES WILL BE LOST"))return;
+
+  reader.onload = () => {
+    const fileContent = reader.result; // Use reader.result instead of event.target.result.
+    filedata = JSON.parse(fileContent);
+    graph.clear();
+    graph.fromJSON(filedata);
+    updateElementList();
+    // You can process the content here (e.g., display it, send it to a server, etc.).
+  };
+  reader.readAsText(file); // Read the file as text.
+});
+updateElementList();
+</script>
+<script> //Trigger tutorial
+  if (getCookie("hasDoneTutorial") == "error"){
+    document.getElementById("tutorialBtn").click();
+  }
+</script>
+
+</body>
+</html>

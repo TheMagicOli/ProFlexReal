@@ -1,0 +1,182 @@
+{
+"PROP": {
+    "3/8": {
+        "25":
+            { 
+               "name": "1/2 ID CSST Tubing x 25' coil - Yellow Jacket",
+               "cost": "102.05"
+        },
+        "75": {
+            "name": "1/2 ID CSST Tubing x 75' coil - Yellow Jacket",
+            "cost": "306.19"
+        },
+        "150": {
+            "name": "1/2 ID CSST Tubing x 150' coil - Yellow Jacket",
+            "cost": "612.37"
+        },
+        "225": {
+            "name": "1/2 ID CSST Tubing x 225' coil - Yellow Jacket",
+            "cost": "918.56"
+        }
+},
+"1/2": {
+    "25":
+        { 
+           "name": "1/2 ID CSST Tubing x 25' coil - Yellow Jacket",
+           "cost": "102.05"
+    },
+    "75": {
+        "name": "1/2 ID CSST Tubing x 75' coil - Yellow Jacket",
+        "cost": "306.19"
+    },
+    "150": {
+        "name": "1/2 ID CSST Tubing x 150' coil - Yellow Jacket",
+        "cost": "612.37"
+    },
+    "225": {
+        "name": "1/2 ID CSST Tubing x 225' coil - Yellow Jacket",
+        "cost": "918.56"
+    }
+},
+"3/4": {
+    "25": {
+        "name": "3/4 ID CSST Tubing x 25' coil - Yellow Jacket",
+        "cost": "132.37"
+    },
+    "75": {
+        "name": "3/4 ID CSST Tubing x 75' coil - Yellow Jacket",
+        "cost": "396.24"
+    },
+    "150": {
+        "name": "3/4 ID CSST Tubing x 150' spool - Yellow Jacket",
+        "cost": "792.51"
+    },
+    "225": {
+        "name": "3/4 ID CSST Tubing x 225' spool - Yellow Jacket",
+        "cost": "1,188.75"
+    }
+},
+"1": {
+    "25":{
+        "name": "1 ID CSST Tubing x 25' coil - Yellow Jacket",
+        "cost": "162.33"
+    },
+    "75": {
+        "name": "1 ID CSST Tubing x 75' coil - Yellow Jacket",
+        "cost": "486.25"
+    },
+    "150": {
+        "name": "1 ID CSST Tubing x 150' spool - Yellow Jacket",
+        "cost": "972.49"
+    }, 
+    "300": {
+        "name": "2 ID CSST Tubing x 150' spool - Yellow Jacket",
+        "cost": "1944.98"
+    }
+},
+"1 1/4": {
+    "25": {
+        "name": "1 1/4 ID CSST Tubing x 25' coil - Yellow Jacket",
+        "cost": "248.03"
+    },
+    "75": {
+        "name": "1 1/4 ID CSST Tubing x 75' coil - Yellow Jacket",
+        "cost": "743.66"
+    },
+    "150": {
+        "name": "1 1/4 ID CSST Tubing x 150' spool - Yellow Jacket",
+        "cost": "1,487.32"
+    }
+}
+},
+"NAT": {
+        "3/8": {
+            "25":
+                { 
+                   "name": "1/2 ID CSST Tubing x 25' coil - Yellow Jacket",
+                   "cost": "102.05"
+            },
+            "75": {
+                "name": "1/2 ID CSST Tubing x 75' coil - Yellow Jacket",
+                "cost": "306.19"
+            },
+            "150": {
+                "name": "1/2 ID CSST Tubing x 150' coil - Yellow Jacket",
+                "cost": "612.37"
+            },
+            "225": {
+                "name": "1/2 ID CSST Tubing x 225' coil - Yellow Jacket",
+                "cost": "918.56"
+            }
+    },
+    "1/2": {
+        "25":
+            { 
+               "name": "1/2 ID CSST Tubing x 25' coil - Yellow Jacket",
+               "cost": "102.05"
+        },
+        "75": {
+            "name": "1/2 ID CSST Tubing x 75' coil - Yellow Jacket",
+            "cost": "306.19"
+        },
+        "150": {
+            "name": "1/2 ID CSST Tubing x 150' coil - Yellow Jacket",
+            "cost": "612.37"
+        },
+        "225": {
+            "name": "1/2 ID CSST Tubing x 225' coil - Yellow Jacket",
+            "cost": "918.56"
+        }
+},
+    "3/4": {
+        "25": {
+            "name": "3/4 ID CSST Tubing x 25' coil - Yellow Jacket",
+            "cost": "132.37"
+        },
+        "75": {
+            "name": "3/4 ID CSST Tubing x 75' coil - Yellow Jacket",
+            "cost": "396.24"
+        },
+        "150": {
+            "name": "3/4 ID CSST Tubing x 150' spool - Yellow Jacket",
+            "cost": "792.51"
+        },
+        "225": {
+            "name": "3/4 ID CSST Tubing x 225' spool - Yellow Jacket",
+            "cost": "1,188.75"
+        }
+    },
+    "1": {
+        "25":{
+            "name": "1 ID CSST Tubing x 25' coil - Yellow Jacket",
+            "cost": "162.33"
+        },
+        "75": {
+            "name": "1 ID CSST Tubing x 75' coil - Yellow Jacket",
+            "cost": "486.25"
+        },
+        "150": {
+            "name": "1 ID CSST Tubing x 150' spool - Yellow Jacket",
+            "cost": "972.49"
+        }, 
+        "300": {
+            "name": "2 ID CSST Tubing x 150' spool - Yellow Jacket",
+            "cost": "1944.98"
+        }
+    },
+    "1 1/4": {
+        "25": {
+            "name": "1 1/4 ID CSST Tubing x 25' coil - Yellow Jacket",
+            "cost": "248.03"
+        },
+        "75": {
+            "name": "1 1/4 ID CSST Tubing x 75' coil - Yellow Jacket",
+            "cost": "743.66"
+        },
+        "150": {
+            "name": "1 1/4 ID CSST Tubing x 150' spool - Yellow Jacket",
+            "cost": "1,487.32"
+        }
+    }
+    }
+}

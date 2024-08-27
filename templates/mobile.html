@@ -1,0 +1,810 @@
+{% include "head.html" %}
+
+<!--DETECT IF USER RUNS IOS-->
+
+<audio hidden id="clicksfx"><source src="/click.mp3" type="audio/ogg">
+</audio>
+<audio hidden id="delsfx"><source src="/delete.mp3" type="audio/ogg"></audio>
+<audio hidden id="makesfx"><source src="/make.mp3" type="audio/ogg"></audio>
+
+<!--Fix for autofcus on inputs-->
+
+</style>
+        <!--ALL FUNCTIONS AND COMMENTS-->
+        <script>
+                    //Resets X value in EditElement to always be = or > 0
+                    function resetXY(){
+                        try{
+                            //Gets element by id and then sets it to 0
+                            if (document.getElementById('xinput').value < 0){
+                                document.getElementById('xinput').value = 0;
+                            }
+                            if (document.getElementById('yinput').value < 0){
+                                document.getElementById('yinput').value = 0;
+                            }
+                        }
+                        catch (ex){
+                            //pass
+                        }
+                    }
+                    //setInterval updates every available ms
+                    setInterval(resetXY);
+                    
+                    //allList returns the graph in a JSON object
+                    function returnToJSON(){
+                        return JSON.stringify( graph.toJSON());
+                    }
+
+                    //Changes all elements (as of 0.1) that display the current sel element in their .innerHTML
+                    function updateCurrentSelectedDOC(){
+                      
+                     //var iframe = document.getElementById('hotbar');
+                     // var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+                      //document.getElementById("editsel").innerHTML = 'Edit ' + iframe.contentWindow.document.getElementById("UnList6").value + '';
+                      document.getElementById("delText").innerHTML = getSelectedElement();
+                      var z = 1;
+                      //  document.getElementById("editsel").innerHTML = 'Edit ' + document.getElementById("UnList").value + '';
+                   //   document.getElementById("delText").innerHTML = document.getElementById("UnList").value;
+                    }
+
+                    //returns the object of an element based on the name of the string that's created
+                    function returnElementByName(nameString){
+                            //get all Models and iterate through them, adding only their label/text attr to the array
+                            var allModels = graph.get('cells').models;
+                            for(var i = 0; i < allModels.length; i++) {
+                                var e = allModels[i];
+                                if (e.attr('label/text') == nameString){
+                                    return e;
+                                }
+                            }
+                            return false;
+                    }
+
+                function updateLengths(data){//Returns the BTU requirements on ProFlex based on data.json through the 
+                    typeGas = "propane";
+                    if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
+                    if (document.getElementById("typegas").value == "prop"){var typeGas = "propane";} //Evals gas type
+                    pressureDrop = document.getElementById("pressuredrop").value;
+                    pipeSizing = document.getElementById("allPipeDiam").value
+                    allLengths =  data[typeGas][pressureDrop][pipeSizing];
+                    newlist = document.getElementById("allLengths");
+                    newlist.innerHTML = "";
+                    for (let i = 0; i < Object.entries( allLengths).length; i++) {
+                        var li = document.createElement('option');
+                         li.innerHTML = Object.entries(allLengths)[i][0];
+                         li.value = Object.entries(allLengths)[i][0];
+                         newlist.appendChild(li);
+                    } 
+                }
+                function downloadJsonFile(jsonString, filename) {
+                  //Make a download link that it clicks
+                    const dataUri = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonString);
+                    const anchor = document.createElement('a');
+                    anchor.href = dataUri;
+                    anchor.download = filename + '.pfxds';
+                    anchor.style.display = 'none';
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    document.body.removeChild(anchor);
+                }
+                    function getGasLengthPossibilities(){
+                        fetch('/d')
+                        .then((response) => response.json())
+                        .then((json) => updateLengths(json));//Very long conditional that finds the correct value based on pressure drop/type
+                    }
+                    function getGasBTUS(){
+                        fetch('/d')
+                        .then((response) => response.json())
+                        .then((json) => returnBTUS(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                    }
+                    function getPriceRecs(){
+                      fetch('/p')
+                        .then((response) => response.json())
+                        .then((json) => getRecommendedPricePlan(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                    }
+                    function getRecommendedPricePlan(data){
+                      //Function that returns all links on the current selected element and then applies each one to the option in the Edit Menu
+                      graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true });
+                      all = graph.get('cells').models;
+                      allLinks = [];
+                      for(var i = 0; i < all.length; i++) { //First get list of elements.
+                        if (all[i]["attributes"]["type"] == "standard.Link"){
+                          allLinks.push(all[i]["attributes"]["labels"][0]["attrs"]);
+                        }
+                      }
+                      totalCost = 0;
+                      allProducts = document.getElementById("priceplan");
+                      allProducts.innerHTML = "";
+                      for (i = 0; i < allLinks.length; ++i) {
+                        var gasDict = data[allLinks[i]["typeGas"]];
+                        var dataforPipe = gasDict[allLinks[i]["pipeDiam"]];
+                        optimalProductName = "No Product Available";
+                        optimalProductPrice = "0";
+                        for (const [key, value] of Object.entries(dataforPipe)) {
+                          if (parseInt(key) >= parseInt(allLinks[i]["length"]))
+                          {optimalProductName=value.name;optimalProductPrice=value.cost;totalCost += Number(value.cost); break;}
+                        }
+                        var li = document.createElement('h4');
+                        li.innerText = "\n" + optimalProductName + " - $" + optimalProductPrice +  "\n";
+                        li.value = i;
+                        allProducts.appendChild(li);
+                      }
+                      document.getElementById("finalCost").innerHTML = "<br>Total - $" + Number(totalCost.toFixed(2)).toString();
+                  }
+                  function findClosestHighestValue(dictionary, x) {
+    let closestHigherKey = null;
+    for (const key in dictionary) {
+        if (parseInt(key) > x) {
+            if (!closestHigherKey || parseInt(key) < parseInt(closestHigherKey)) {
+                closestHigherKey = key;
+            }
+        }
+    }
+    return closestHigherKey ? dictionary[closestHigherKey] : null;
+}
+                    function returnBTUS(data){
+                        if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
+                        if (document.getElementById("typegas").value == "prop"){var typeGas = "propane";} //Evals gas type
+                        pressureDrop = document.getElementById("pressuredrop").value;
+                         pipeSizing = document.getElementById("allPipeDiam").value;
+                         pipeLengthRun = document.getElementById("allLengths").value;
+                         final  =  data[typeGas][pressureDrop][pipeSizing][pipeLengthRun];
+                         document.getElementById("btutext").innerHTML = final;
+                    }
+                    function highlightSelectedElement(){
+                        let allModels = graph.get('cells').models;
+                        for(var i = 0; i < allModels.length; i++) {
+                            var f = allModels[i];
+                            f.attr("body/fill", "rgba(107, 107, 256, 1)");
+                        }
+                        let e = returnElementByName(getSelectedElement());
+                        e.attr("body/fill", "rgba(256, 107, 107, 1)");//232, 107, 107
+                    }
+                    function getSelectedElement(){
+                       return document.getElementById('UnList').options[document.getElementById('UnList').selectedIndex ].value;
+                    }
+                    //Creates a link between two elements, and sets both the attributes and changes
+                    function addLink(parentElement, childElement){
+
+                        let parent = returnElementByName(parentElement);
+                        let child = returnElementByName(childElement);
+                        let BTUs = document.getElementById("btutext").innerHTML;
+                        let length = document.getElementById("allLengths").value;
+                        let pipeDiam = document.getElementById("allPipeDiam").value;
+                        let typeGas = document.getElementById("typegas").value.toUpperCase();
+                        var link = new joint.shapes.standard.Link();
+                        link.source(parent);
+                        link.labels([{
+                            attrs: {
+                                BTUs: BTUs,
+                                length: length,
+                                pipeDiam: pipeDiam,
+                                typeGas: typeGas,
+                                text: {
+                                    text: typeGas+ " " +  pipeDiam +  " INCH\n" +length + " FEET\n" + BTUs + " BTUs"
+                                }
+                            }
+                        }]);
+                        link.target(child);
+                        link.addTo(graph); 
+                    }
+                    function getAllLinks(){
+                      //Function that returns all links on the current selected element and then applies each one to the option in the Edit Menu
+                      var all =  graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true });
+                      pipelist = document.getElementById("portedit");
+                      pipelist.innerHTML = "";
+                      didLoop = false;
+                      for (i = 0; i < all.length; ++i) {
+                        var li = document.createElement('option');
+                        li.innerText = all[i]["attributes"]["labels"][0]["attrs"]["text"]["text"].replace(/(\r\n|\n|\r)/gm, " - ");
+                        li.value = i;
+                        pipelist.appendChild(li);
+                        didLoop = true;
+                      }
+                      if (!didLoop){
+                        pipelist.innerHTML = "<option>No Pipes Connected</option>"
+                      }
+                    }
+                    function deleteLinkByNum(num){
+                      dellink =  graph.getConnectedLinks(returnElementByName(getSelectedElement()), { outbound: true })[num];
+                      graph.removeCells([dellink]);
+                    }
+                    //Updates the select input box(es) with the id UnList with all current non standard.Link elements
+                    function updateElementList(){
+                        //Access list, clear all HTMl inside of it
+                        let list = document.getElementById("UnList"); //Current selected 
+                        list.innerHTML = "";
+                       /* let list2 = document.getElementById("UnList2"); //Selection option for connect
+                        list2.innerHTML = "";*/ //Deprecated
+                        let list4 = document.getElementById("UnList4"); //Selection option for connect
+                        list4.innerHTML = "";
+                        let list5 = document.getElementById("UnList5"); //Selection option for connect
+                        list5.innerHTML = "";
+                        //let list6 = document.getElementById("hotbar").contentWindow.document.getElementById("UnList6"); //Selection in hotbar
+                        
+                        //get all Models and iterate through them, adding only their label/text attr to the array
+                        var allModels = graph.get('cells').models;
+                        let tempArray = [];
+
+                        for(var i = 0; i < allModels.length; i++) {
+                            var e = allModels[i];
+                            tempArray.push(e.attr('label/text'));
+                        }
+                        
+
+                        tempArray = tempArray.filter((element) => element !== undefined); //Remove all undefined standard.Link elements
+                        //TO FIX: each element has to be itereated sepeately for each list because if it append li to one, it doesn't to the other.
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list.appendChild(li);
+                            }
+                       /* for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list2.appendChild(li);
+                            } */ //Deprecated
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list4.appendChild(li);
+                            }
+                        for (i = 0; i < tempArray.length; ++i) {
+                                var li = document.createElement('option');
+                                li.innerText = tempArray[i];
+                                li.value = tempArray[i];
+                                list5.appendChild(li);
+                            }
+                    }
+//from https://stackoverflow.com/questions/4825683/how-do-i-create-and-read-a-value-from-cookie-with-javascript
+function createCookie(name, value, days) {
+    var expires;
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toGMTString();
+    }
+    else {
+        expires = "";
+    }
+    document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function getCookie(c_name) {
+    if (document.cookie.length > 0) {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1) {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) {
+                c_end = document.cookie.length;
+            }
+            return unescape(document.cookie.substring(c_start, c_end));
+        }
+    }
+    return "error";
+}
+function autoSave(){
+  createCookie('savedata', returnToJSON(), 9999);
+}
+
+        </script>
+        <!--REACTJS WORKSPACE-->
+        <!--<input hidden type="range" id="points" width="50" name="points" min="0" max="100" value=5 oninput="paper.scale(this.value*0.01+0.5,this.value*0.01+0.5);" float="position:absolute; bottom: 0; left: 0;z-index: 1000;">-->
+        <!--TOOLBAR-->
+            
+        <!--ALL MODAL CLASSES-->
+        <!--NEW ELEMENT MODAL (id=newElModal)-->
+        <div class="modal fade" id="newElModal" role="dialog">
+            <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">New Element</h4>
+            </div>
+            <div class="modal-body">
+                <p>Name
+                <input text="name" id="mname" maxlength="20" required></p>
+              </div>
+            <div class="modal-footer">
+                <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+                <button type="button" class="btn btn-default" onclick="if(returnElementByName(document.getElementById('mname').value) == false){document.getElementById('makesfx').play();var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName);  rect2.addTo(graph);updateElementList();}else{window.alert('Name is already in use! Please choose a new element name');document.getElementById('newElement').click()}" data-dismiss="modal"><font color="green">Save</font></button>
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPipeModal" role="dialog">
+    <div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4 class="modal-title">New Pipe</h4>
+    </div>
+    <div class="modal-body">
+        <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
+        <hr>
+        <p>
+        <select id="typegas" name="typegas" onchange="updateOptions(); getGasBTUS()">
+          <option value="nat">Natural</option>
+            <option value="prop">Propane</option>
+          </select> Gas</p>
+          <p>Pressure Drop
+          <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities();getGasBTUS()">
+            <option value="0.5 WC" id="0.5 WC">0.5 WC</option>
+            <option value="1 WC" id="1 WC">1 WC</option>
+            <option value="2.5 WC" id="2.5 WC" style="display: none">2.5 WC</option>
+            <option value="3 WC" id="3 WC">3 WC</option>
+            <option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option>
+            <option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option>
+            <option value="1 PSIG" id="1 PSIG">1 PSIG</option>
+            <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>
+          </select></p>
+        <p>Pipe Diameter
+        <select id="allPipeDiam" onclick="getGasLengthPossibilities();getGasBTUS()">
+            <option value="1">1</option>
+            <option value="3/8">3/8</option>
+            <option value="1/2">1/2</option>
+            <option value="3/4">3/4</option>
+            <option value="1 1/4">1 1/4</option>
+          </select>
+           inches
+          </p>
+        <p>Run Length: 
+        <select id="allLengths" onclick="getGasBTUS()">
+        </select>
+        feet</p>
+        <script>
+            getGasLengthPossibilities();
+            getGasBTUS();
+        </script>
+            <script>
+              function updateOptions(){
+                if (document.getElementById("typegas").value == "nat"){
+                  document.getElementById("pressuredrop").innerHTML = '            <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="1 WC" id="1 WC">1 WC</option><option value="3 WC" id="3 WC">3 WC</option><option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option><option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
+                }
+                if (document.getElementById("typegas").value == "prop"){
+                  document.getElementById("pressuredrop").innerHTML = ' <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="2.5 WC" id="2.5 WC">2.5 WC</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
+                }
+              }
+            </script>
+        <hr>
+      <h3> <b>BTU Requirements: <h3 id="btutext">N/A</h3></b></h3>
+    </div>
+    <div class="modal-footer">
+        <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+        <button type="button" class="btn btn-default" onclick="document.getElementById('clicksfx').play();addLink(document.getElementById('UnList4').value, document.getElementById('UnList5').value)" data-dismiss="modal"><font color="green">New Pipe</font></button>
+      <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+    </div>
+  </div>
+  
+</div>
+</div>
+</div>
+</div>
+</div>
+    <!--EDIT CURRENT SEL ELEMENT MODAL (id=selEditModal)-->
+    <div class="modal fade" id="selEditModal" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Edit <select id="UnList">
+                </select>
+              </h4>
+            </div>
+            <div class="modal-body">
+                <!---Code to make sure x is not a neg number-->
+                <script>
+                    //Resets by every ms getting the value of x and y and reseting them so they cannot be set to a number less than 0
+                    function resetXY(){
+                        try {
+                            if (document.getElementById('xinput').value < 0){
+                                document.getElementById('xinput').value = 0;
+                            }
+                            if (document.getElementById('yinput').value < 0){
+                                document.getElementById('yinput').value = 0;
+                            }
+                        }
+                        catch (e){
+                            //pass
+                        }
+                    }
+                    setInterval(resetXY);
+                </script>
+                <select id="allAttributes">
+                  <option value="label/text">Name</option>
+                  <option value="label/fill">Text Color</option>
+                </select>
+                <select id="colorvalue">
+                  <option value="white">White</option>
+                  <option value="blue">Blue</option>
+                  <option value="red">Red</option>
+                  <option value="yellow">Yellow</option>
+                  <option value="purple">Purple</option>
+                  <option value="green">Green</option>
+                  <option value="black">Black</option>
+                  <option value="gray">Gray</option>
+
+                </select>
+                <input float="left" id="changevalue">
+                <script>
+                  function updateTypeSel(){
+                    if (document.getElementById("allAttributes").value == "label/fill"){document.getElementById("changevalue").style.display = "none";document.getElementById("colorvalue").style.display = "inline"; };
+                    if (document.getElementById("allAttributes").value == "label/text"){document.getElementById("changevalue").style.display = "inline"; document.getElementById("colorvalue").style.display = "none";};
+                  //  if (document.getElementById("allAttributes").value == "body/fill"){document.getElementById("changevalue").style.display = "none"};
+
+                  }
+                  setInterval(updateTypeSel);
+                </script>
+              <br>
+              <br>
+              <button class="btn btn-default" onclick="var curEl = returnElementByName(getSelectedElement()); curEl.position(0, 0);">Reset Position</button>
+             <br>
+             <br>
+              <select id="portedit">
+                <option>None</option>
+              </select>
+              <button onclick="document.getElementById('delsfx').play();deleteLinkByNum(document.getElementById('portedit').value)" class="btn btn-default" data-dismiss="modal">Delete Pipe</button>
+              <br><hr>
+              <div align="center">
+                <font color="red">
+                  <button class="btn btn-default"  style="height:50px;width:200px;text-align: center;"  onclick="if (window.confirm('Are you sure you want to delete this element?')){document.getElementById('delsfx').play();returnElementByName(getSelectedElement()).remove();updateElementList();}" data-dismiss="modal"> Delete "<span id="delText"></span>"  </button>
+
+                </font>
+              </div>
+              <!--  <p>Position: X</p>
+                <input type="number" min=0 id="xinput" value=0 inputmode="numeric" pattern="[0-9]+">
+                 <p>Position: Y</p>
+                 <input type="number" min=0 value=0 inputmode="numeric" pattern="[0-9]+"><br>
+                 <p>.attr( <input type="text" id="attr">) = <input type="text" id="changevalue"></p>
+                 <button onclick='addLink(getSelectedElement(), document.getElementById("UnList2").value)'>Connect To</button>
+                 <select id="UnList2"></select> -->
+                 
+            </div>
+            <script>
+                //Function to query all elements within a Graph object and return the correct one based on name (no 2 elements can have the same name)
+                let a = 1;
+            </script>
+            <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
+                <button type="button" class="btn btn-default"  onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement());
+                   if (document.getElementById('allAttributes').value == 'label/text') {
+                    e.attr(document.getElementById('allAttributes').value, document.getElementById('changevalue').value);
+                  } 
+                  if (document.getElementById('allAttributes').value == 'label/fill') { 
+                    e.attr(document.getElementById('allAttributes').value, document.getElementById('colorvalue').value);
+                    }   
+                    updateElementList();}"><font color="green">Save Changes</font></button>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      <!--TUTORIAL POPUP-->
+      <div class="modal fade" id="tutorialPopup" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Welcome</h4>
+              </div>
+              <div class="modal-body">
+                <p>Welcome to ProFlexTinker.<br><br> If this is your first time using this program, we recommend taking a look at the tutorial.<br><br>If you want to get to this page again, click the help button on the hotbar below.</p>
+                <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button><button class="btn btn-default" data-dismiss="modal" onclick="createCookie('hasDoneTutorial', 'true', 99999)"><font color="red">I'm Good</font></button>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+                </div>
+              </div>
+              </div>
+      </div>
+    </div>
+<!--PROJECT SETTINGS-->
+<div class="modal fade" id="projectmodal" role="dialog">
+  <div class="modal-dialog">
+  
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Settings</h4>
+      </div>
+      <div class="modal-body">    
+        <button class="btn btn-default" onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time (This project will be lost forever!)')){graph.clear();updateElementList();updateElementList();}}" data-dismiss="modal"><font color="red">Erase Project</font></button>
+        <br><br> <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button>
+      </div>
+    </div>
+    
+  </div>
+</div>
+</div>
+
+       <!--PRICE SHEET ELEMENT-->
+       <div class="modal fade" id="priceSheet" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Pricing</h4>
+            </div>
+            <div class="modal-body">
+              <font color="red">
+              <div id="priceplan">
+
+              </div>
+              <font color="#1B5A95"> 
+              <h3  id="finalCost"></h3>      </font>    
+              <button class="btn btn-default" data-dismiss="modal" onclick="window.location.href = '/printme?content=' +  document.getElementById('priceplan').innerHTML + '<br><h3><font color=\'red\'>' + document.getElementById('finalCost').innerHTML">Print Digital Estimate Receipt</button>
+            </div>
+            <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+       <!--DISPLAY MODAL  ELEMENT-->
+    <div class="modal fade" id="displayModal" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title"></h4>
+              <center><button style="float: center" type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button></center>
+            </div>
+            <div class="modal-body" id="displayModalContent">
+                <div id="myholder" style="float: center" ></div>
+                <div style="float: bottom"><p></p></div>
+
+              </div>
+          </div>
+
+        </div>
+      </div>
+<!---DELETE MENU-->
+      <div class="modal fade" id="deleteMenu" role="dialog">
+        <div class="modal-dialog">
+        
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Delete Element</h4>
+            </div>
+            <div class="modal-body">
+              <center>
+                <button class="btn btn-default"  style="height:50px;width:200px;text-align: center;"  onclick="returnElementByName(getSelectedElement()).remove();updateElementList();" data-dismiss="modal"> Delete "<span id="delText"></span>"  </button>
+              </center>
+            </div>
+            <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
+              <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+
+
+      
+    <script type="text/javascript">
+        var namespace = joint.shapes;
+        //Create new graph
+        var graph = new joint.dia.Graph({}, { cellNamespace: namespace });
+
+        var paper = new joint.dia.Paper({
+            el: document.getElementById('myholder'),
+            model: graph,
+            width: 320,
+            height: 500,
+            gridSize: 10,
+            drawGrid: true,
+            background: {
+                color: 'rgba(167, 214, 212, 0.3)'
+            },
+            cellViewNamespace: namespace
+        });
+
+       var rect = new joint.shapes.standard.Rectangle();
+        rect.position(100, 30);
+        rect.resize(80, 20);
+        rect.attr({
+            body: {
+                fill: 'rgba(167, 214, 212, 0.3)',
+            },
+            label: {
+                text: 'Gas Meter',
+                fill: 'white'
+            }
+        });
+        rect.addTo(graph);
+        paper.scale(1,1);
+        //Dynamically reize based on the users
+        function adjustPaperSize() {
+
+            const paperWidth = document.getElementById('displayModalContent').offsetWidth; // Get the window width
+            const paperHeight = document.getElementById('displayModalContent').offsetHeight; // Get the window height
+            console.log(paperWidth);
+            console.log(paperHeight);
+            // Set the paper size
+            paper.setDimensions(paperWidth-30, paperHeight/1.25 + 60);
+        }
+        //Adjust paper size for modal size
+        setInterval(adjustPaperSize, 10);
+
+        //Get saved plot data
+        window.addEventListener('resize', adjustPaperSize);
+        if  (getCookie('savedata') != "error"){
+            jsondata = JSON.parse(getCookie('savedata'));
+            graph.fromJSON(jsondata);
+        }
+      ;
+      $(window).resize(function() {
+    var canvas = $('#myholder');
+    paper.setDimensions(canvas.width(), canvas.height());
+});
+
+    </script>
+<!--<iframe id="hotbar" style="position: fixed;bottom: 0;" width="100%" height="20%" frameBorder="0" float="center" src="{{ url_for('hotbar') }}" ></iframe>
+
+-->
+
+<script>
+
+setInterval(updateCurrentSelectedDOC);
+setInterval(highlightSelectedElement, 500);
+setInterval(autoSave, 5000);
+</script>
+<script>
+    updateElementList(); //This must be here because the DOM element hasn't been created so cannot be invoked yet.
+    </script>    
+
+
+
+<button hidden id="newElement" data-toggle="modal" data-target="#newElModal">New Element</button>
+<button hidden  id="newPipe" data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
+<button hidden id="priceSheetBT" data-toggle="modal" data-target="#priceSheet" onclick="getPriceRecs()"></button>
+<button hidden id="deleteBT" data-toggle="modal" data-target="#deleteMenu">e</button>
+<button hidden id="projectSettings" data-toggle="modal" data-target="#projectmodal"></button>
+<button hidden id="displayModalBT" data-toggle="modal" data-target="#displayModal">Display Modal</button>
+
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<script>
+  function updatePipesOptionEdit(){
+    var e = getAllLinks();
+  }
+  updateElementList();
+ </script>
+<button hidden onclick="updatePipesOptionEdit()" data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
+
+<br>
+<button hidden id="saveDesign" onclick="var name = window.prompt('Select a name for this design');if (name) { downloadJsonFile(returnToJSON(), name)}">Save Design</button>
+<button hidden id="loadDesign" onclick="document.getElementById('getFile').click();">Load Design</button>
+<button  hidden onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time to delete all elements in the graph')){graph.clear();updateElementList();updateElementList();}}">Delete All</button>
+<button hidden  onclick="updateElementList();" id="updateList"></button>
+<button hidden  id="tutorialBtn" data-toggle="modal" data-target="#tutorialPopup"></button>
+<button hidden id="projectSettings" data-toggle="modal" data-target="#"></button>
+<input type="file" id="getFile" accept=".pfxds" style="display: none">
+
+<style>
+  html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(52 65 83);
+
+}
+.iosbutton {
+  border: none;
+  padding: 0;
+  outline: none;
+  background-color: transparent;
+  user-select: none;
+}
+
+span {
+  box-sizing: border-box;
+}
+.screen {
+  background-color:rgb(52 65 83) ;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1.5vh;
+  width: 36vh;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.5vh;
+
+}
+
+.icon {
+  width: 10vh;
+  height: 10vh;
+  border-radius: 1.5vh;
+  background-color: #e3edf1b9;
+  margin: 1.5vh;
+}
+
+.icon:active {
+  opacity: 0.75;
+}
+</style>
+<div class="iphone">
+  <div class="screen">
+    <button onclick="document.getElementById('newElement').click()" class="icon">  
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        <!-- <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />-->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3zM12 8v8m-4-4h8"
+          /></svg>
+    </button>
+    <button class="icon" onclick="document.getElementById('newPipe').click()">
+      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 7.205c4.418 0 8-1.165 8-2.602C20 3.165 16.418 2 12 2S4 3.165 4 4.603c0 1.437 3.582 2.602 8 2.602ZM12 22c4.963 0 8-1.686 8-2.603v-4.404c-.052.032-.112.06-.165.09a7.75 7.75 0 0 1-.745.387c-.193.088-.394.173-.6.253-.063.024-.124.05-.189.073a18.934 18.934 0 0 1-6.3.998c-2.135.027-4.26-.31-6.3-.998-.065-.024-.126-.05-.189-.073a10.143 10.143 0 0 1-.852-.373 7.75 7.75 0 0 1-.493-.267c-.053-.03-.113-.058-.165-.09v4.404C4 20.315 7.037 22 12 22Zm7.09-13.928a9.91 9.91 0 0 1-.6.253c-.063.025-.124.05-.189.074a18.935 18.935 0 0 1-6.3.998c-2.135.027-4.26-.31-6.3-.998-.065-.024-.126-.05-.189-.074a10.163 10.163 0 0 1-.852-.372 7.816 7.816 0 0 1-.493-.268c-.055-.03-.115-.058-.167-.09V12c0 .917 3.037 2.603 8 2.603s8-1.686 8-2.603V7.596c-.052.031-.112.059-.165.09a7.816 7.816 0 0 1-.745.386" fill="black"/>
+      </svg>    
+    </button>
+    <button class="icon" onclick="document.getElementById('editsel').click()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon><line x1="3" y1="22" x2="21" y2="22"></line></svg>
+      </svg>
+    </button>
+    <button class="icon" onclick="parent.document.getElementById('saveDesign').click()"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"/></svg>
+    </svg></button>
+    <button class="icon" onclick="document.getElementById('loadDesign').click()"> <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.08V8l-6-6H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h6"/><path d="M14 3v5h5M18 21v-6M15 18h6"/></svg>
+    </svg></button>
+    <button class="icon" onclick="document.getElementById('priceSheetBT').click()">  <svg class="svg-icon" viewBox="0 0 20 20">
+      <path fill="black" d="M17.671,13.945l0.003,0.002l1.708-7.687l-0.008-0.002c0.008-0.033,0.021-0.065,0.021-0.102c0-0.236-0.191-0.428-0.427-0.428H5.276L4.67,3.472L4.665,3.473c-0.053-0.175-0.21-0.306-0.403-0.306H1.032c-0.236,0-0.427,0.191-0.427,0.427c0,0.236,0.191,0.428,0.427,0.428h2.902l2.667,9.945l0,0c0.037,0.119,0.125,0.217,0.239,0.268c-0.16,0.26-0.257,0.562-0.257,0.891c0,0.943,0.765,1.707,1.708,1.707S10,16.068,10,15.125c0-0.312-0.09-0.602-0.237-0.855h4.744c-0.146,0.254-0.237,0.543-0.237,0.855c0,0.943,0.766,1.707,1.708,1.707c0.944,0,1.709-0.764,1.709-1.707c0-0.328-0.097-0.631-0.257-0.891C17.55,14.182,17.639,14.074,17.671,13.945 M15.934,6.583h2.502l-0.38,1.709h-2.312L15.934,6.583zM5.505,6.583h2.832l0.189,1.709H5.963L5.505,6.583z M6.65,10.854L6.192,9.146h2.429l0.19,1.708H6.65z M6.879,11.707h2.027l0.189,1.709H7.338L6.879,11.707z M8.292,15.979c-0.472,0-0.854-0.383-0.854-0.854c0-0.473,0.382-0.855,0.854-0.855s0.854,0.383,0.854,0.855C9.146,15.596,8.763,15.979,8.292,15.979 M11.708,13.416H9.955l-0.189-1.709h1.943V13.416z M11.708,10.854H9.67L9.48,9.146h2.228V10.854z M11.708,8.292H9.386l-0.19-1.709h2.512V8.292z M14.315,13.416h-1.753v-1.709h1.942L14.315,13.416zM14.6,10.854h-2.037V9.146h2.227L14.6,10.854z M14.884,8.292h-2.321V6.583h2.512L14.884,8.292z M15.978,15.979c-0.471,0-0.854-0.383-0.854-0.854c0-0.473,0.383-0.855,0.854-0.855c0.473,0,0.854,0.383,0.854,0.855C16.832,15.596,16.45,15.979,15.978,15.979 M16.917,13.416h-1.743l0.189-1.709h1.934L16.917,13.416z M15.458,10.854l0.19-1.708h2.218l-0.38,1.708H15.458z"></path>
+    </svg></button>
+    <button class="icon" onclick="document.getElementById('projectSettings').click()">          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+    <br>
+    <button style='float: center;' onclick="document.getElementById('displayModalBT').click()" class="icon"><svg class="svg-icon" viewBox="0 0 20 20">
+      <path fill="black" d="M6.523,7.683c0.96,0,1.738-0.778,1.738-1.738c0-0.96-0.778-1.738-1.738-1.738c-0.96,0-1.738,0.778-1.738,1.738
+        C4.785,6.904,5.563,7.683,6.523,7.683z M5.944,5.365h1.159v1.159H5.944V5.365z M18.113,0.729H1.888
+        c-0.64,0-1.159,0.519-1.159,1.159v16.224c0,0.64,0.519,1.159,1.159,1.159h16.225c0.639,0,1.158-0.52,1.158-1.159V1.889
+        C19.271,1.249,18.752,0.729,18.113,0.729z M18.113,17.532c0,0.321-0.262,0.58-0.58,0.58H2.467c-0.32,0-0.579-0.259-0.579-0.58
+        V2.468c0-0.32,0.259-0.579,0.579-0.579h15.066c0.318,0,0.58,0.259,0.58,0.579V17.532z M15.91,7.85l-4.842,5.385l-3.502-2.488
+        c-0.127-0.127-0.296-0.18-0.463-0.17c-0.167-0.009-0.336,0.043-0.463,0.17l-3.425,4.584c-0.237,0.236-0.237,0.619,0,0.856
+        c0.236,0.236,0.62,0.236,0.856,0l3.152-4.22l3.491,2.481c0.123,0.123,0.284,0.179,0.446,0.174c0.16,0.005,0.32-0.051,0.443-0.174
+        l5.162-5.743c0.238-0.236,0.238-0.619,0-0.856C16.529,7.614,16.146,7.614,15.91,7.85z"></path>
+    </svg></button>
+
+  </div>
+</div>
+
+
+<script>
+const finput = document.getElementById('getFile');
+const reader = new FileReader(); // Create the FileReader instance.
+
+finput.addEventListener('change', () => {
+  const file = finput.files[0];
+  if (!file) return; // No file selected or canceled.
+  if (!window.confirm("Loading a new design  will replace the current design. \n\nAre you sure you want to erase this design? ALL UNSAVED CHANGES WILL BE LOST"))return;
+
+  reader.onload = () => {
+    const fileContent = reader.result; // Use reader.result instead of event.target.result.
+    filedata = JSON.parse(fileContent);
+    graph.clear();
+    graph.fromJSON(filedata);
+    updateElementList();
+    // You can process the content here (e.g., display it, send it to a server, etc.).
+  };
+  reader.readAsText(file); // Read the file as text.
+});
+updateElementList();
+</script>
+<script> //Trigger tutorial
+  if (getCookie("hasDoneTutorial") == "error"){
+    document.getElementById("tutorialBtn").click();
+  }
+</script>
+
+</body>
+</html>
