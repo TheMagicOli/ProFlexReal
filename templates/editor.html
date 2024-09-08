@@ -60,7 +60,7 @@
                     }
                     //setInterval updates every available ms
                     setInterval(resetXY);
-                    
+
                     //allList returns the graph in a JSON object
                     function returnToJSON(){
                         return JSON.stringify( graph.toJSON());
@@ -68,7 +68,7 @@
 
                     //Changes all elements (as of 0.1) that display the current sel element in their .innerHTML
                     function updateCurrentSelectedDOC(){
-                      
+
                      var iframe = document.getElementById('hotbar');
                      // var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
                       document.getElementById("editsel").innerHTML = 'Edit ' + iframe.contentWindow.document.getElementById("UnList6").value + '';
@@ -91,7 +91,7 @@
                             return false;
                     }
 
-                function updateLengths(data){//Returns the BTU requirements on ProFlex based on data.json through the 
+                function updateLengths(data){//Returns the BTU requirements on ProFlex based on data.json through the
                     typeGas = "propane";
                     if (document.getElementById("typegas").value == "nat"){var typeGas = "natural";} //Evals gas type
                     if (document.getElementById("typegas").value == "prop"){var typeGas = "propane";} //Evals gas type
@@ -105,7 +105,7 @@
                          li.innerHTML = Object.entries(allLengths)[i][0];
                          li.value = Object.entries(allLengths)[i][0];
                          newlist.appendChild(li);
-                    } 
+                    }
                 }
                 function downloadJsonFile(jsonString, filename) {
                   //Make a download link that it clicks
@@ -126,12 +126,12 @@
                     function getGasBTUS(){
                         fetch('/d')
                         .then((response) => response.json())
-                        .then((json) => returnBTUS(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                        .then((json) => returnBTUS(json));//Very long conditional that finds the correct value based on pressure drop/type
                     }
                     function getPriceRecs(){
                       fetch('/p')
                         .then((response) => response.json())
-                        .then((json) => getRecommendedPricePlan(json));//Very long conditional that finds the correct value based on pressure drop/type  
+                        .then((json) => getRecommendedPricePlan(json));//Very long conditional that finds the correct value based on pressure drop/type
                     }
                     function getRecommendedPricePlan(data){
                       //Function that returns all links on the current selected element and then applies each one to the option in the Edit Menu
@@ -224,7 +224,7 @@
                             }
                         }]);
                         link.target(child);
-                        link.addTo(graph); 
+                        link.addTo(graph);
                     }
                     function getAllLinks(){
                       //Function that returns all links on the current selected element and then applies each one to the option in the Edit Menu
@@ -240,7 +240,7 @@
                         didLoop = true;
                       }
                       if (!didLoop){
-                        pipelist.innerHTML = "<option>No Pipes Connected</option>"
+                        pipelist.innerHTML = "<option>No Parent Pipes</option>"
                       }
                     }
                     function deleteLinkByNum(num){
@@ -285,7 +285,7 @@
                     //Updates the select input box(es) with the id UnList with all current non standard.Link elements
                     function updateElementList(){
                         //Access list, clear all HTMl inside of it
-                        let list = document.getElementById("UnList"); //Current selected 
+                        let list = document.getElementById("UnList"); //Current selected
                         list.innerHTML = "";
                        /* let list2 = document.getElementById("UnList2"); //Selection option for connect
                         list2.innerHTML = "";*/ //Deprecated
@@ -303,7 +303,7 @@
                             var e = allModels[i];
                             tempArray.push(e.attr('label/text'));
                         }
-                        
+
 
                         tempArray = tempArray.filter((element) => element !== undefined); //Remove all undefined standard.Link elements
                         //TO FIX: each element has to be itereated sepeately for each list because if it append li to one, it doesn't to the other.
@@ -374,9 +374,9 @@ function autoSave(){
         <!--REACTJS WORKSPACE-->
        <!----> <select hidden style="width:20%;" width="50%" id="UnList" class="customselect" float="position:absolute; bottom: 0; right: 0;z-index: 1000;"></select>
         <input type="range" id="points" width="50" name="points" min="0" max="100" value=5 oninput="paper.scale(this.value*0.01+0.5,this.value*0.01+0.5);" float="position:absolute; bottom: 0; left: 0;z-index: 1000;">
-        <div id="myholder" align="right"></div> 
+        <div id="myholder" align="right"></div>
         <!--TOOLBAR-->
-            
+
         <!--ALL MODAL CLASSES-->
         <!--NEW ELEMENT MODAL (id=newElModal)-->
         <div class="modal fade" id="newElModal" role="dialog">
@@ -391,17 +391,16 @@ function autoSave(){
               </div>
             <div class="modal-footer">
                 <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
-                <button type="button" class="btn btn-default" onclick="if(returnElementByName(document.getElementById('mname').value) == false){document.getElementById('makesfx').play();var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName);  rect2.addTo(graph);updateElementList();}else{document.getElementById('errsfx').play();window.alert('Name is already in use! Please choose a new element name');document.getElementById('newElement').click()}" data-dismiss="modal"><font color="green">Save</font></button>
+                <button type="button" class="btn btn-default" onclick="if(returnElementByName(document.getElementById('mname').value) == false){document.getElementById('makesfx').play();var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName);  rect2.addTo(graph);updateElementList();}else{document.getElementById('errsfx').play();window.alert('Name is already in use! Please choose a new element name');setTimeout(2000, document.getElementById('newElement').click())}" data-dismiss="modal"><font color="green">Save</font></button>
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>
   </div>
 </div>
-
 <div class="modal fade" id="newPipeModal" role="dialog">
     <div class="modal-dialog">
   <div class="modal-content">
@@ -437,7 +436,7 @@ function autoSave(){
           </select>
            inches
           </p>
-        <p>Run Length: 
+        <p>Run Length:
         <select id="allLengths" onclick="getGasBTUS()">
         </select>
         feet</p>
@@ -464,7 +463,7 @@ function autoSave(){
       <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
     </div>
   </div>
-  
+
 </div>
 </div>
 </div>
@@ -473,7 +472,7 @@ function autoSave(){
     <!--EDIT CURRENT SEL ELEMENT MODAL (id=selEditModal)-->
     <div class="modal fade" id="selEditModal" role="dialog">
         <div class="modal-dialog">
-        
+
           <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title" id="titleText">Edit Current Element</h4>
@@ -545,7 +544,7 @@ function autoSave(){
                  <p>.attr( <input type="text" id="attr">) = <input type="text" id="changevalue"></p>
                  <button onclick='addLink(getSelectedElement(), document.getElementById("UnList2").value)'>Connect To</button>
                  <select id="UnList2"></select> -->
-                 
+
             </div>
             <script>
                 //Function to query all elements within a Graph object and return the correct one based on name (no 2 elements can have the same name)
@@ -555,15 +554,15 @@ function autoSave(){
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement());
                    if (document.getElementById('allAttributes').value == 'label/text') {
                     e.attr(document.getElementById('allAttributes').value, document.getElementById('changevalue').value);
-                  } 
-                  if (document.getElementById('allAttributes').value == 'label/fill') { 
+                  }
+                  if (document.getElementById('allAttributes').value == 'label/fill') {
                     e.attr(document.getElementById('allAttributes').value, document.getElementById('colorvalue').value);
-                    }   
+                    }
                     updateElementList();}"><font color="green">Save Changes</font></button>
                 <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
-          
+
         </div>
       </div>
       <!--TUTORIAL POPUP-->
@@ -586,18 +585,18 @@ function autoSave(){
 <!--PROJECT SETTINGS-->
 <div class="modal fade" id="projectmodal" role="dialog">
   <div class="modal-dialog">
-  
+
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title">Settings</h4>
       </div>
-      <div class="modal-body">    
+      <div class="modal-body">
         <button class="btn btn-default" id="togglesfxBT" onclick="toggleSFX()" data-dismiss="modal">Toggle Sound Effects</button>
         <br><br><button class="btn btn-default" onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time (This project will be lost forever!)')){graph.clear();document.getElementById('delsfx').play();updateElementList();}}" data-dismiss="modal"><font color="red">Erase Project</font></button>
         <br><br> <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button>
       </div>
     </div>
-    
+
   </div>
 </div>
 </div>
@@ -605,7 +604,7 @@ function autoSave(){
        <!--PRICE SHEET ELEMENT-->
     <div class="modal fade" id="priceSheet" role="dialog">
         <div class="modal-dialog">
-        
+
           <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title">Pricing</h4>
@@ -615,21 +614,21 @@ function autoSave(){
               <div id="priceplan">
 
               </div>
-              <font color="#1B5A95"> 
-              <h3  id="finalCost"></h3>      </font>    
-              <button class="btn btn-default" data-dismiss="modal" onclick="window.location.href = '/printme?content=' +  document.getElementById('priceplan').innerHTML + '<br><h3><font color=\'red\'>' + document.getElementById('finalCost').innerHTML">Print Digital Estimate Receipt</button>
+              <font color="#1B5A95">
+              <h3  id="finalCost"></h3>      </font>
+              <button class="btn btn-default" data-dismiss="modal" onclick="window.location.href = '/printme?content=' +  encodeURI(document.getElementById('priceplan').innerHTML) + '<br><h3><font color=\'red\'>' + document.getElementById('finalCost').innerHTML">Print Digital Estimate Receipt</button>
             </div>
             <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
-          
+
         </div>
       </div>
 <!---DELETE MENU-->
       <div class="modal fade" id="deleteMenu" role="dialog">
         <div class="modal-dialog">
-        
+
           <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title">Delete Element</h4>
@@ -643,13 +642,13 @@ function autoSave(){
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
-          
+
         </div>
       </div>
 
 
 
-      
+
     <script type="text/javascript">
         var namespace = joint.shapes;
         //Create new graph
@@ -665,6 +664,7 @@ function autoSave(){
             background: {
                 color: 'rgba(175, 186, 182, 0.3)'
             },
+            restrictTranslate: true,
             cellViewNamespace: namespace
         });
 
@@ -701,9 +701,9 @@ function autoSave(){
             graph.fromJSON(jsondata);
         }
       ;
-      paper.on('cell:pointerdown', 
-    function(cellView, evt, x, y) { 
-        //window.alert('cell view ' + cellView.model.id + ' was clicked'); 
+      paper.on('cell:pointerdown',
+    function(cellView, evt, x, y) {
+        //window.alert('cell view ' + cellView.model.id + ' was clicked');
         document.getElementById('click2sfx').play();
         setSelectedElement(cellView.model["attributes"]["attrs"]["label"]["text"]);
       }
@@ -722,14 +722,14 @@ setInterval(autoSave, 1000);
 <script>
   getAndUpdateSFXState();
     updateElementList(); //This must be here because the DOM element hasn't been created so cannot be invoked yet.
-    </script>    
+    </script>
 
 
 
 <button hidden id="newElement" data-toggle="modal" data-target="#newElModal">New Element</button>
 <button hidden id="newPipe" data-toggle="modal" data-target="#newPipeModal">New Pipe</button>
 <button hidden id="priceSheetBT" data-toggle="modal" data-target="#priceSheet" onclick="getPriceRecs()"></button>
-<button hidden id="deleteBT" data-toggle="modal" data-target="#deleteMenu">e</button>
+<button hidden id="deleteBT" data-toggle="modal" data-t arget="#deleteMenu">e</button>
 <button hidden id="projectSettings" data-toggle="modal" data-target="#projectmodal"></button>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 <script>

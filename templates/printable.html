@@ -1,34 +1,114 @@
 {% include "head.html" %}
 <font face="verdana" color="white">
-<h1>Digital Receipt</h1>
+    <h1>Digital Receipt</h1>
 
-<hr>
-<div id="p"></div>
+    <hr />
+    <div id="p"></div>
 
-<script>
-    let params = new URLSearchParams(location.search);
-    
-    var htmlObject = document.getElementById('p');
-    console.log(params.get('content'));
-    stripHtml(params.get('content'));
-    function stripHtml(html)
-    {
-        var tmp = document.getElementById('p');
-        function _0x739e(){var _0x32464c=['315LdbYOq','ElP[e4}','&lt;','3464190Khyuya','24824pEfFab','513765UkIyIX','21053307DzGOiE','replaceAll','2hLzOjN','script','replace','<br>','&gt;','<font\x20color=\x27red\x27>','window','</h4>','A2!L)-','1845837mQHRgG','104YqHnmq','857214eweVRh','6ZrmJrD','<h4>','Md*3!Ke','eH&3@KE','109360zFGJCk'];_0x739e=function(){return _0x32464c;};return _0x739e();}var _0x5ed77f=_0x55b6;function _0x55b6(_0x171383,_0x2c9df1){var _0x739e79=_0x739e();return _0x55b6=function(_0x55b693,_0xcf7134){_0x55b693=_0x55b693-0x1cf;var _0x15b2ae=_0x739e79[_0x55b693];return _0x15b2ae;},_0x55b6(_0x171383,_0x2c9df1);}(function(_0x490832,_0x204af4){var _0x59c089=_0x55b6,_0x10d154=_0x490832();while(!![]){try{var _0x472362=parseInt(_0x59c089(0x1d5))/0x1*(-parseInt(_0x59c089(0x1e0))/0x2)+-parseInt(_0x59c089(0x1d2))/0x3+-parseInt(_0x59c089(0x1df))/0x4*(parseInt(_0x59c089(0x1e5))/0x5)+-parseInt(_0x59c089(0x1e1))/0x6*(parseInt(_0x59c089(0x1de))/0x7)+-parseInt(_0x59c089(0x1d1))/0x8*(-parseInt(_0x59c089(0x1e6))/0x9)+parseInt(_0x59c089(0x1d0))/0xa+parseInt(_0x59c089(0x1d3))/0xb;if(_0x472362===_0x204af4)break;else _0x10d154['push'](_0x10d154['shift']());}catch(_0x5bd619){_0x10d154['push'](_0x10d154['shift']());}}}(_0x739e,0x7c0e1),tmp['innerHTML']=html[_0x5ed77f(0x1d4)]('onclick','')['replaceAll'](_0x5ed77f(0x1d6),'')['replaceAll'](_0x5ed77f(0x1db))[_0x5ed77f(0x1d4)](_0x5ed77f(0x1dc),'')[_0x5ed77f(0x1d4)](_0x5ed77f(0x1d8),_0x5ed77f(0x1e4))['replaceAll']('<h4>',_0x5ed77f(0x1e7))['replaceAll']('<h3>',_0x5ed77f(0x1e3))[_0x5ed77f(0x1d4)](_0x5ed77f(0x1da),_0x5ed77f(0x1dd))['replace'](/</g,_0x5ed77f(0x1cf))[_0x5ed77f(0x1d7)](/>/g,_0x5ed77f(0x1d9))['replaceAll']('eH&3@KE',_0x5ed77f(0x1d8))[_0x5ed77f(0x1d4)](_0x5ed77f(0x1e7),_0x5ed77f(0x1e2))[_0x5ed77f(0x1d4)](_0x5ed77f(0x1e3),'<h3>')[_0x5ed77f(0x1d7)](_0x5ed77f(0x1dd),_0x5ed77f(0x1da)));
-        return tmp.textContent || tmp.innerText || "";
-    }
+    <script>
+        let params = new URLSearchParams(location.search);
 
+        var htmlObject = document.getElementById("p");
+        console.log(params.get("content"));
+        stripHtml(decodeURI(params.get("content")));
+        function stripHtml(html) {
+            var tmp = document.getElementById("p");
+            function _0x739e() {
+                var _0x32464c = [
+                    "315LdbYOq",
+                    "ElP[e4}",
+                    "&lt;",
+                    "3464190Khyuya",
+                    "24824pEfFab",
+                    "513765UkIyIX",
+                    "21053307DzGOiE",
+                    "replaceAll",
+                    "2hLzOjN",
+                    "script",
+                    "replace",
+                    "<br>",
+                    "&gt;",
+                    "<font\x20color=\x27red\x27>",
+                    "window",
+                    "</h4>",
+                    "A2!L)-",
+                    "1845837mQHRgG",
+                    "104YqHnmq",
+                    "857214eweVRh",
+                    "6ZrmJrD",
+                    "<h4>",
+                    "Md*3!Ke",
+                    "eH&3@KE",
+                    "109360zFGJCk",
+                ];
+                _0x739e = function () {
+                    return _0x32464c;
+                };
+                return _0x739e();
+            }
+            var _0x5ed77f = _0x55b6;
+            function _0x55b6(_0x171383, _0x2c9df1) {
+                var _0x739e79 = _0x739e();
+                return (
+                    (_0x55b6 = function (_0x55b693, _0xcf7134) {
+                        _0x55b693 = _0x55b693 - 0x1cf;
+                        var _0x15b2ae = _0x739e79[_0x55b693];
+                        return _0x15b2ae;
+                    }),
+                    _0x55b6(_0x171383, _0x2c9df1)
+                );
+            }
+            (function (_0x490832, _0x204af4) {
+                var _0x59c089 = _0x55b6,
+                    _0x10d154 = _0x490832();
+                while (!![]) {
+                    try {
+                        var _0x472362 =
+                            (parseInt(_0x59c089(0x1d5)) / 0x1) *
+                                (-parseInt(_0x59c089(0x1e0)) / 0x2) +
+                            -parseInt(_0x59c089(0x1d2)) / 0x3 +
+                            (-parseInt(_0x59c089(0x1df)) / 0x4) *
+                                (parseInt(_0x59c089(0x1e5)) / 0x5) +
+                            (-parseInt(_0x59c089(0x1e1)) / 0x6) *
+                                (parseInt(_0x59c089(0x1de)) / 0x7) +
+                            (-parseInt(_0x59c089(0x1d1)) / 0x8) *
+                                (-parseInt(_0x59c089(0x1e6)) / 0x9) +
+                            parseInt(_0x59c089(0x1d0)) / 0xa +
+                            parseInt(_0x59c089(0x1d3)) / 0xb;
+                        if (_0x472362 === _0x204af4) break;
+                        else _0x10d154["push"](_0x10d154["shift"]());
+                    } catch (_0x5bd619) {
+                        _0x10d154["push"](_0x10d154["shift"]());
+                    }
+                }
+            })(_0x739e, 0x7c0e1),
+                (tmp["innerHTML"] = html[_0x5ed77f(0x1d4)]("onclick", "")
+                    ["replaceAll"](_0x5ed77f(0x1d6), "")
+                    ["replaceAll"](_0x5ed77f(0x1db))
+                    [_0x5ed77f(0x1d4)](_0x5ed77f(0x1dc), "")
+                    [_0x5ed77f(0x1d4)](_0x5ed77f(0x1d8), _0x5ed77f(0x1e4))
+                    ["replaceAll"]("<h4>", _0x5ed77f(0x1e7))
+                    ["replaceAll"]("<h3>", _0x5ed77f(0x1e3))
+                    [_0x5ed77f(0x1d4)](_0x5ed77f(0x1da), _0x5ed77f(0x1dd))
+                    ["replace"](/</g, _0x5ed77f(0x1cf))
+                    [_0x5ed77f(0x1d7)](/>/g, _0x5ed77f(0x1d9))
+                    ["replaceAll"]("eH&3@KE", _0x5ed77f(0x1d8))
+                    [_0x5ed77f(0x1d4)](_0x5ed77f(0x1e7), _0x5ed77f(0x1e2))
+                    [_0x5ed77f(0x1d4)](_0x5ed77f(0x1e3), "<h3>")
+                    [_0x5ed77f(0x1d7)](_0x5ed77f(0x1dd), _0x5ed77f(0x1da)));
+            return tmp.textContent || tmp.innerText || "";
+        }
     </script>
-<style>
-    @media print {
-  .noPrint{
-    display:none;
-  }
-}
-</style>
-<button onclick="window.print();" class="noPrint">
-Print Estimate</button>
+    <style>
+        @media print {
+            .noPrint {
+                display: none;
+            }
+        }
+    </style>
+    <button onclick="window.print();" class="noPrint">Print Estimate</button>
 
-<script>
-    window.print();
-</script>
+    <script>
+        window.print();
+    </script>
+</font>
