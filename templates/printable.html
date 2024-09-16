@@ -1,16 +1,19 @@
 {% include "head.html" %}
-<font face="verdana" color="white">
+<font face="verdana" color="black">
     <h1>Digital Receipt</h1>
 
     <hr />
     <div id="p"></div>
 
     <script>
+
+
+
         let params = new URLSearchParams(location.search);
 
         var htmlObject = document.getElementById("p");
         console.log(params.get("content"));
-        stripHtml(decodeURI(params.get("content")));
+        stripHtml(decodeURIComponent(params.get("content")));
         function stripHtml(html) {
             var tmp = document.getElementById("p");
             function _0x739e() {
@@ -107,8 +110,11 @@
         }
     </style>
     <button onclick="window.print();" class="noPrint">Print Estimate</button>
-
-    <script>
-        window.print();
-    </script>
 </font>
+<style>
+@media print {
+  @page { margin: 0; }
+  body { margin: 1.6cm; }
+}
+</style>
+<!--For chrome formatting ---!>

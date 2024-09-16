@@ -6,48 +6,64 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="/static/style.css" /> 
+    <link rel="shortcut icon" href="">
+    <link rel="stylesheet" href="/static/style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
     <meta charset="utf-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='pflexicon.png') }}">
+    <link rel="apple-touch-startup-image" href="{{ url_for('static', filename='pflexicon.png') }}">
    <!-- <meta name="viewport" maximum-scale=1  content="width=device-width, initial-scale=1.0">-->
    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
+   <link rel="apple-touch-icon" href="https://proflexcsst.com/wp-content/uploads/2024/03/Pro-Flex-App-Icon-1-192x192.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1290x2796.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1179x2256.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1284x2778.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1170x2532.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1125x2436.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1242x2688.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-828x1792.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1242x2208.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-750x1334.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-640x1136.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-2048x2732.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1668x2388.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1640x2360.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1668x2224.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1620x2160.png">
+      <link rel="apple-touch-startup-image" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="https://proflexcsst.com/wp-content/uploads/daftplug-instantify/img-pwa-apple-launch-1536x2048.png">
     <!-- Add to home screen-->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='addtohomescreen.css') }}">
     <script src="{{ url_for('static', filename='addtohomescreen.js') }}"></script>
-    <!-- iPhone Xs Max (1242px x 2688px) --> 
+    <!-- iPhone Xs Max (1242px x 2688px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" href="/apple-launch-1242x2688.png">
-<!-- iPhone Xr (828px x 1792px) --> 
+<!-- iPhone Xr (828px x 1792px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" href="/apple-launch-828x1792.png">
-<!-- iPhone X, Xs (1125px x 2436px) --> 
+<!-- iPhone X, Xs (1125px x 2436px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="/apple-launch-1125x2436.png">
-<!-- iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus (1242px x 2208px) --> 
+<!-- iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus (1242px x 2208px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" href="/apple-launch-1242x2208.png">
-<!-- iPhone 8, 7, 6s, 6 (750px x 1334px) --> 
+<!-- iPhone 8, 7, 6s, 6 (750px x 1334px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/apple-launch-750x1334.png">
-<!-- iPad Pro 12.9" (2048px x 2732px) --> 
+<!-- iPad Pro 12.9" (2048px x 2732px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="/apple-launch-2048x2732.png">
-<!-- iPad Pro 11” (1668px x 2388px) --> 
+<!-- iPad Pro 11” (1668px x 2388px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="/apple-launch-1668x2388.png">
-<!-- iPad Pro 10.5" (1668px x 2224px) --> 
+<!-- iPad Pro 10.5" (1668px x 2224px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" href="/apple-launch-1668x2224.png">
-<!-- iPad Mini, Air (1536px x 2048px) --> 
+<!-- iPad Mini, Air (1536px x 2048px) -->
 <link rel="apple-touch-startup-image" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="/apple-launch-1536x2048.png">
 
-<meta name="apple-mobile-web-app-title" content="ProFlexTinker">
+<meta name="apple-mobile-web-app-title" content="Pro Flex">
 
 <style>
     body {
    -webkit-touch-callout: none;
 }
 </style>
-    <title>ProFlexTinker</title>
+    <title>Pro Flex Draw</title>
 </head>
     <body>
         <script>addToHomescreen();</script>

@@ -55,7 +55,7 @@ body {
     font-weight: bold;
 }
 .modal-title {
-    font-family: "Wingdings 3";
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     color: black;
     font-size: 20px;
 }
@@ -72,4 +72,13 @@ body {
 .dropdown-menu {
     background-color: white;
     border-color: #d2cd6b;
+}
+#content {
+    position: relative;
+}
+#content img {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 5%;
 }

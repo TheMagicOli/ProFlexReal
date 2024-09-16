@@ -1,9 +1,53 @@
-{% extends "head.html" %}
-
-{% block content %}
-
-<h1>Hello universe!</h1>
-<a href="{{ url_for('demo') }}">Go to Demo Save Page</a>
-<a href="{{ url_for('remote') }}">Go to AJAX Python Demo Call Page</a>
-
+{% extends "head.html" %} {% block content %}
+<div id="content">
+    <img
+        src="{{ url_for('static', filename='pflexicon.png') }}"
+        class="ribbon"
+        alt=""
+    />
+</div>
+<h1 id="deadcenter" style="align: center">
+    <br />
+    <p>PROFLEX DRAW OPEN BETA</p>
+    <button
+        class="btn btn-default"
+        onclick="window.location.replace('/editor')"
+    >
+        <b>MAKE A DESIGN</b>
+    </button>
+    <br />
+    <button class="btn btn-default" onclick="window.location.replace('/docs')">
+        <b>READ THE DOCS</b>
+    </button>
+    <br />
+    <button
+        class="btn btn-default"
+        onclick="window.location.replace('    https://proflexcsst.com/
+')"
+    >
+        <b>VISIT HOMEPAGE</b>
+    </button>
+</h1>
+<style>
+    #deadcenter {
+        background-color: #111;
+        width: 800px;
+        height: 300px;
+        line-height: 40px;
+        position: absolute;
+        top: 50%;
+        margin-top: -100px;
+        left: 50%;
+        margin-left: -400px;
+        font-weight: bold;
+        font-size: 30px;
+        text-transform: uppercase;
+        color: #ccc;
+        text-align: center;
+        vertical-align: middle;
+    }
+    body {
+        background-image: "https://proflexcsst.com/wp-content/uploads/2023/12/Proflex-Slider.png"";
+    }
+</style>
 {% endblock %}
