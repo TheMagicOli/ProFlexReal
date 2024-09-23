@@ -20,6 +20,7 @@
         <!--DETECT IF USER RUNS IOS-->
 <div id="content">
 <img  src="{{ url_for('static', filename='pflexicon.png') }}" class="ribbon" alt="" />
+<h3 class="ribbon"><font color='red'>BTUs</font><br>33000</h3>
 </div>
 <script>
         function iOS() {
@@ -193,6 +194,8 @@
                         }
                         let e = returnElementByName(getSelectedElement());
                         e.attr("body/fill", "rgba(255, 163, 16, 1)");//232, 107, 107
+                        let gasEl = returnElementByName("Gas Source");
+                        gasEl.attr("body/fill", "rgba(255, 100, 89, 1)")
                     }
                     function getSelectedElement(){
                       var iframe = document.getElementById("hotbar");
@@ -376,7 +379,7 @@ function autoSave(){
         </script>
         <!--REACTJS WORKSPACE-->
        <!----> <select hidden style="width:20%;" width="50%" id="UnList" class="customselect" float="position:absolute; bottom: 0; right: 0;z-index: 1000;"></select>
-        <input style="background-color;: yellow" type="range" id="points" width="50" name="points" min="0" max="100" value=5 oninput="paper.scale(this.value*0.01+0.5,this.value*0.01+0.5);" float="position:absolute; bottom: 0; left: 0;z-index: 1000;">
+        <input style="color: yellow" type="range" id="points" width="50" name="points" min="0" max="100" value=5 oninput="paper.scale(this.value*0.01+0.5,this.value*0.01+0.5);" float="position:absolute; bottom: 0; left: 0;z-index: 1000;">
         <div id="myholder" align="right"></div>
         <!--TOOLBAR-->
 
@@ -386,16 +389,104 @@ function autoSave(){
             <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h4 class="modal-title">New Element</h4>
+              <h4 class="modal-title">New</h4>
             </div>
             <div class="modal-body">
-                <p>Name
-                <input text="name" id="mname" maxlength="20" required></p>
               </div>
             <div class="modal-footer">
-                <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
-                <button type="button" class="btn btn-default" onclick="if(returnElementByName(document.getElementById('mname').value) == false){document.getElementById('makesfx').play();var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName);  rect2.addTo(graph);updateElementList();}else{document.getElementById('errsfx').play();window.alert('Name is already in use! Please choose a new element name');setTimeout(2000, document.getElementById('newElement').click())}" data-dismiss="modal"><font color="green">Save</font></button>
+              <div class="tab">
+                <button class="tablinks" onclick="openTab(event, 'applianceTab')">Appliance</button>
+                <button class="tablinks" onclick="openTab(event, 'pipeTab')">Pipe</button>
+                <button class="tablinks" onclick="openTab(event, 'meterTab')">Gas Source</button>
+              </div>
+              <div id="meterTab" class="tabcontent">
+                <p><input type="text"></p>
+                <button type="button" class="btn btn-default" onclick="if(returnElementByName('Gas Source') == false ){var rect2 = gassource.clone(); rect2.position(100,100);rect2.addTo(graph);}">Display Gas Source</button>
+              </div>
+              <!-- Tab content -->
+              <div id="applianceTab" class="tabcontent">
+                <p>Name
+                <input text="name" id="mname" maxlength="20" required></p>
+                <br>
+                  <p>BTU Requirement <input id="btuapl" type="number" maxlength="20" required></p>
+                  <button type="button" class="btn btn-default" onclick="if(returnElementByName(document.getElementById('mname').value) == false){document.getElementById('makesfx').play();var elName = document.getElementById('mname').value; var rect2 = rect.clone(); rect2.position(0,0); rect2.attr('label/text', elName + '\nBTUs: ' + document.getElementById('btuapl').value); rect2.attr('label/btus', document.getElementById('btuapl').value);  rect2.addTo(graph);updateElementList();}else{document.getElementById('errsfx').play();window.alert('Name is already in use! Please choose a new element name');setTimeout(2000, document.getElementById('newElement').click())}" data-dismiss="modal"><font color="green">Save</font></button>
+                  <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+                  
+                </div>
+              
+              <div id="pipeTab" class="tabcontent">
+                <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
+                <hr>
+                <p>
+                  <p>Pressure Drop
+                  <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities();getGasBTUS()">
+                    <option value="0.5 WC" id="0.5 WC">0.5 WC</option>
+                    <option value="1 WC" id="1 WC">1 WC</option>
+                    <option value="2.5 WC" id="2.5 WC" style="display: none">2.5 WC</option>
+                    <option value="3 WC" id="3 WC">3 WC</option>
+                    <option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option>
+                    <option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option>
+                    <option value="1 PSIG" id="1 PSIG">1 PSIG</option>
+                    <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>
+                  </select></p>
+                <p>Pipe Diameter
+                <select id="allPipeDiam" onclick="getGasLengthPossibilities();getGasBTUS()">
+                    <option value="1">1</option>
+                    <option value="3/8">3/8</option>
+                    <option value="1/2">1/2</option>
+                    <option value="3/4">3/4</option>
+                    <option value="1 1/4">1 1/4</option>
+                  </select>
+                   inches
+                  </p>
+                <p>Run Length:
+                <select id="allLengths" onclick="getGasBTUS()">
+                </select>
+                feet</p>
+                <script>
+                    getGasLengthPossibilities();
+                    getGasBTUS();
+                </script>
+                    <script>
+                      function updateOptions(){
+                        if (document.getElementById("typegas").value == "nat"){
+                          document.getElementById("pressuredrop").innerHTML = '            <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="1 WC" id="1 WC">1 WC</option><option value="3 WC" id="3 WC">3 WC</option><option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option><option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
+                        }
+                        if (document.getElementById("typegas").value == "prop"){
+                          document.getElementById("pressuredrop").innerHTML = ' <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="2.5 WC" id="2.5 WC">2.5 WC</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
+                        }
+                      }
+                    </script>
+                <hr>
+              <h3> <b>BTU Requirements: <h3 id="btutext">N/A</h3></b></h3>
+              <button type="button" class="btn btn-default" onclick="if (document.getElementById('UnList4').value == document.getElementById('UnList5').value) {document.getElementById('errsfx').play();window.alert('Error! Cannot connet pipe to same appliance!')} else {document.getElementById('clicksfx').play();addLink(document.getElementById('UnList4').value, document.getElementById('UnList5').value)}" data-dismiss="modal"><font color="green">New Pipe</font></button>
               <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+        
+              </div>
+              <script>
+                function openTab(evt, tabName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+              </script>
+                <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
+
             </div>
           </div>
 
@@ -411,54 +502,7 @@ function autoSave(){
       <h4 class="modal-title">New Pipe</h4>
     </div>
     <div class="modal-body">
-        <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
-        <hr>
-        <p>
-        <select id="typegas" name="typegas" onchange="updateOptions(); getGasBTUS()">
-          <option value="nat">Natural</option>
-            <option value="prop">Propane</option>
-          </select> Gas</p>
-          <p>Pressure Drop
-          <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities();getGasBTUS()">
-            <option value="0.5 WC" id="0.5 WC">0.5 WC</option>
-            <option value="1 WC" id="1 WC">1 WC</option>
-            <option value="2.5 WC" id="2.5 WC" style="display: none">2.5 WC</option>
-            <option value="3 WC" id="3 WC">3 WC</option>
-            <option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option>
-            <option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option>
-            <option value="1 PSIG" id="1 PSIG">1 PSIG</option>
-            <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>
-          </select></p>
-        <p>Pipe Diameter
-        <select id="allPipeDiam" onclick="getGasLengthPossibilities();getGasBTUS()">
-            <option value="1">1</option>
-            <option value="3/8">3/8</option>
-            <option value="1/2">1/2</option>
-            <option value="3/4">3/4</option>
-            <option value="1 1/4">1 1/4</option>
-          </select>
-           inches
-          </p>
-        <p>Run Length:
-        <select id="allLengths" onclick="getGasBTUS()">
-        </select>
-        feet</p>
-        <script>
-            getGasLengthPossibilities();
-            getGasBTUS();
-        </script>
-            <script>
-              function updateOptions(){
-                if (document.getElementById("typegas").value == "nat"){
-                  document.getElementById("pressuredrop").innerHTML = '            <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="1 WC" id="1 WC">1 WC</option><option value="3 WC" id="3 WC">3 WC</option><option value="6 WC (11-13)" id="6 WC (11-13)">6 WC (11-13)</option><option value="6 WC (13-14)" id="6 WC (13-14)">6 WC (13-14)</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
-                }
-                if (document.getElementById("typegas").value == "prop"){
-                  document.getElementById("pressuredrop").innerHTML = ' <option value="0.5 WC" id="0.5 WC">0.5 WC</option><option value="2.5 WC" id="2.5 WC">2.5 WC</option><option value="1 PSIG" id="1 PSIG">1 PSIG</option> <option value="3.5 PSIG" id="3.5 PSIG">3.5 PSIG</option>'
-                }
-              }
-            </script>
-        <hr>
-      <h3> <b>BTU Requirements: <h3 id="btutext">N/A</h3></b></h3>
+
     </div>
     <div class="modal-footer">
         <!--Modal will disappear, but before execute by on_click the init function for a new element and append it to graph-->
@@ -562,7 +606,7 @@ function autoSave(){
                     e.attr(document.getElementById('allAttributes').value, document.getElementById('colorvalue').value);
                     }
                     updateElementList();}"><font color="green">Save Changes</font></button>
-                <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
+                <button type="button" id='buttonDismiss' onclick='window.alert("erg")' class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
           </div>
 
@@ -594,7 +638,12 @@ function autoSave(){
         <h4 class="modal-title">Settings</h4>
       </div>
       <div class="modal-body">
-        <button class="btn btn-default" id="togglesfxBT" onclick="toggleSFX()" data-dismiss="modal">Toggle Sound Effects</button>
+        <select id="typegas" name="typegas" onchange="updateOptions(); getGasBTUS()">
+          <option value="nat">Natural</option>
+            <option value="prop">Propane</option>
+          </select>
+        
+        <br><br><button class="btn btn-default" id="togglesfxBT" onclick="toggleSFX()" data-dismiss="modal">Toggle Sound Effects</button>
         <br><br><button class="btn btn-default" id="togglesfxBT" onclick="window.location.replace('/mobile')" data-dismiss="modal">Open Mobile Port</button>
         <br><br><button class="btn btn-default" onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time (This project will be lost forever!)')){graph.clear();document.getElementById('delsfx').play();updateElementList();}}" data-dismiss="modal"><font color="red">Erase Project</font></button>
         <br><br> <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button>
@@ -680,11 +729,25 @@ function autoSave(){
                 fill: 'rgba(167, 214, 212, 0.3)',
             },
             label: {
-                text: 'Gas Meter',
-                fill: 'white'
+                text: 'Appliance',
+                fill: 'white',
+                btus: '0',
             }
         });
         rect.addTo(graph);
+        var gassource = new joint.shapes.standard.Rectangle();
+        gassource.position(100, 30);
+        gassource.resize(100, 80);
+        gassource.attr({
+            body: {
+                fill: 'rgba(167, 214, 212, 0.3)',
+            },
+            label: {
+                text: 'Gas Source',
+                fill: 'white',
+            }
+        });
+        gassource.addTo(graph);
         paper.scale(1,1);
         //Dynamically reize based on the users
         function adjustPaperSize() {
@@ -743,7 +806,7 @@ setInterval(autoSave, 1000);
   }
   updateElementList();
  </script>
-<button hidden onclick="updatePipesOptionEdit()" data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
+<button hidden onclick="updatePipesOptionEdit();" data-toggle="modal" data-target="#selEditModal" id="editsel">Edit ""</button>
 
 <br>
 <button hidden id="saveDesign" onclick="var name = window.prompt('Select a name for this design');if (name) { downloadJsonFile(returnToJSON(), name)}">Save Design</button>
