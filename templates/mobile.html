@@ -334,10 +334,6 @@ function autoSave(){
         <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
         <hr>
         <p>
-        <select id="typegas" name="typegas" onchange="updateOptions(); getGasBTUS()">
-          <option value="nat">Natural</option>
-            <option value="prop">Propane</option>
-          </select> Gas</p>
           <p>Pressure Drop
           <select id="pressuredrop" name="pressuredrop" onclick="getGasLengthPossibilities();getGasBTUS()">
             <option value="0.5 WC" id="0.5 WC">0.5 WC</option>
@@ -516,6 +512,11 @@ function autoSave(){
         <h4 class="modal-title">Settings</h4>
       </div>
       <div class="modal-body">
+          <h1>Select Project Gas Type</h1>
+          <select id="typegas" name="typegas" onchange="updateOptions(); getGasBTUS()">
+            <option value="nat">Natural</option>
+              <option value="prop">Propane</option>
+            </select>
         <button class="btn btn-default" onclick="if (window.confirm('Are you sure you want to clear this sketch? Unsaved changes won\'t be saved')){if (window.confirm('Confirm one more time (This project will be lost forever!)')){graph.clear();updateElementList();updateElementList();}}" data-dismiss="modal"><font color="red">Erase Project</font></button>
         <br><br> <button class="btn btn-default" onclick="window.location.replace('/docs') " data-dismiss="modal">Read the Tutorial</button>
       </div>
