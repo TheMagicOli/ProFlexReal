@@ -2,6 +2,18 @@ body {
     background: rgb(255, 255, 255);
 }
 
+.message-box {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    z-index: 1000; /* Make sure it stays on top */
+}
 .customselect {
     background: hsla(0, 11%, 74%, 0.5);
     color: white;

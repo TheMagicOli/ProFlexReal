@@ -46,6 +46,8 @@
 
         <!--ALL FUNCTIONS AND COMMENTS-->
         <script>
+        //initialising error count variables
+        var errorsInProject = [];
                     //Resets X value in EditElement to always be = or > 0
                     function resetXY(){
                         try{
@@ -190,12 +192,12 @@
                       gasMeterExists = false;
                       for(var i = 0; i < allModels.length; i++) {
                         var f = allModels[i];
-                        console.log(f.attr('label/isMeterSpecial'));
+                        //console.log(f.attr('label/isMeterSpecial'));
                         if (f.attr('label/isMeterSpecial') == 'true'){
                           gasMeterExists = true;
                         }
                       }
-                      console.log(gasMeterExists);
+                      //console.log(gasMeterExists);
                       if (gasMeterExists){
                       }
                       else {
@@ -203,6 +205,80 @@
                        ///uh uh, let's make one
                        gasmeter.clone().addTo(graph);
                       }
+                    }
+                    function recursiveBTUCheckForGas(){
+                      recursiveBTUCheck("Gas Meter");
+                    }
+                    function makeid(length) {
+                        let result = '';
+                        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                        const charactersLength = characters.length;
+                        let counter = 0;
+                        while (counter < length) {
+                          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+                          counter += 1;
+                        }
+                        return result;
+                    }
+
+                    function recursiveBTUCheck(childElement){
+                      let child = returnElementByName("Gas Meter");
+                      let pipes = graph.getConnectedLinks(child);
+
+                      pipes.forEach(function(link) {
+                          currentLink = link;
+                          totalBTUInLines = 0;
+                          totalBTUsRequiredInLine = 0;
+                           //WHILE
+                          while (true){
+                          //Start incrementing down the link line
+                          //get btu count as int and increment
+                          totalBTUInLines = totalBTUInLines + Number(link["attributes"]["labels"][0]["attrs"]["BTUs"]);
+                          //Get BTUs required of element there
+                          console.log(link.getTargetElement());
+                          console.log("SEEKING NEXT PIPE");
+                          let parts = currentLink.getTargetElement().attr("label/text").split('\n')[1].split(': ');
+
+                          let btuofElement = parseInt(parts[1], 10);
+
+                          totalBTUsRequiredInLine = totalBTUsRequiredInLine + btuofElement;
+                          console.log(totalBTUInLines);
+                          console.log(totalBTUsRequiredInLine);
+
+                          //lets see if the BTUs required in the line are
+                          //more than the BTUS in the current line
+                          if (totalBTUsRequiredInLine > totalBTUInLines){
+                            //alert user
+                            //make an id for this problem
+                            console.log("true");
+                            //check to see if theres any repeat errors in the project
+                            console.log(errorsInProject);
+                            console.log(errorsInProject.includes(currentLink.getTargetElement().attr("label/text").split("\n")[0]));
+                            if (errorsInProject.includes(currentLink.getTargetElement().attr("label/text").split("\n")[0])){
+                                errorsInProject.append(currentLink.getTargetElement().attr("label/text").split("\n")[0]);
+                                document.getElementById('errsfx').play();
+                                showMessage("<font color='red'> Error </font> <br>The line supports " + totalBTUInLines + " BTUs, but the appliance (" + currentLink.getTargetElement().attr("label/text").split("\n")[0] + ") requires " + totalBTUsRequiredInLine + " BTUS and is not being provided enough BTUs. The problem area has been highlighted red.");
+                              }
+                            }
+                          //get the next link by going link - element - link - what we want
+                          //first check to see if the new element is also equal to the element of prev
+                          //if true this means we have reached the end of the line
+                          console.log(currentLink);
+
+                          if (graph.getConnectedLinks(currentLink.getTargetElement())[0] == currentLink){
+                            break;
+                            //this is the end
+                          }
+                          currentLink = graph.getConnectedLinks(currentLink.getTargetElement())[0];
+                          console.log(currentLink);
+                          } //END WHILE
+
+
+                          console.log("escaped, BTUS required in line " + totalBTUsRequiredInLine);
+                          console.log("actual amount of btus in line " + totalBTUInLines);
+                       });
+
+                      console.log("e");
                     }
                     function highlightSelectedElement(){
                         let allModels = graph.get('cells').models;
@@ -218,6 +294,12 @@
                         }
                         let e = returnElementByName(getSelectedElement());
                         e.attr("body/fill", "rgba(255, 163, 16, 1)");//232, 107, 107
+                    }
+                    function showMessage(stringToDisplay) {
+                        var messageBox = document.getElementById('messageBox');
+                        document.getElementById("msgBoxInput").innerHTML = stringToDisplay;
+                        console.log(stringToDisplay);
+                        messageBox.style.display = 'block';
                     }
                     function getSelectedElement(){
                       var iframe = document.getElementById("hotbar");
@@ -269,7 +351,7 @@
                         didLoop = true;
                       }
                       if (!didLoop){
-                        pipelist.innerHTML = "<option>No Parent Pipes</option>"
+                        pipelist.innerHTML = "<option>No Parent Pipes</option>";
                       }
                     }
                     function deleteLinkByNum(num){
@@ -403,7 +485,11 @@ function autoSave(){
         <input style="background-color: yellow" type="range" id="points" width="50" name="points" min="0" max="100" value=5 oninput="paper.scale(this.value*0.01+0.5,this.value*0.01+0.5);" float="position:absolute; bottom: 0; left: 0;z-index: 1000;">
         <div id="myholder" align="right"></div>
         <!--TOOLBAR-->
-
+        <!--PIPE PROBLEM --->
+        <button hidden id="pipeProblemBtn" data-toggle="modal" data-target="#newElModal"></button>
+        <div class="modal fade" id="pipeProblemModal" role="dialog">
+            <p>Succeeees!</p>
+        </div>
         <!--ALL MODAL CLASSES-->
         <!--NEW ELEMENT MODAL (id=newElModal)-->
         <div class="modal fade" id="newElModal" role="dialog">
@@ -445,14 +531,15 @@ function autoSave(){
             <div id="pipe" class="newmenu" style="display:none">
               <h2>Pipe</h2>
               <div class="w3-bar w3-black">
-                <button class="w3-bar-item w3-button" onclick="difPipe('bybtus')">By BTUs</button>
+                <button class="w3-bar-item w3-button" onclick="difPipe('bydis')">By Distance</button>
                 <button class="w3-bar-item w3-button" onclick="difPipe('byreqs')">By Sizing</button>
               </div>
               <div class="modal-body">
                   <h6>Connect <select id="UnList4"></select> to <select id="UnList5"></select></h6>
 
-                  <div id="bybtus" class="difpipe">
-                  <p>BTUs Required: <input type="nubmer"></p>
+                  <div id="bydis" class="difpipe">
+                  <p>Distance (in feet) Required: <input type="nubmer"></p>
+                  <button data-dismiss="modal" onclick="recursiveBTUCheck('Gas Meter')">RECURSIVE BTU CHECK</button>
                   <button type="button" class="btn btn-default" onclick="document.getElementById('clicksfx').play();addLinkAndGetPipe(document.getElementById('UnList4').value, document.getElementById('UnList5').value)" data-dismiss="modal"><font color="green">New Pipe</font></button>
                   </div>
                   <div id="byreqs" class="difpipe">
@@ -506,7 +593,8 @@ function autoSave(){
 
               </div>
             </div>
-
+            <script>
+            difPipe('bydis');</script>
             <div id="source" class="newmenu" style="display:none">
                 <select id="typegas" name="typegas" onchange="updateOptions(); getGasBTUS()">
                   <option value="nat">Natural</option>
@@ -527,6 +615,10 @@ function autoSave(){
       </div>
     </div>
   </div>
+</div>
+<!--PIPE PROBLEM -->
+<div id="messageBox" class="message-box">
+    <p id="msgBoxInput"></p><button type="button" class="btn btn-default" onclick="document.getElementById('messageBox').style.display = 'none'">Close</button>
 </div>
 <div class="modal fade" id="newPipeModal" role="dialog">
     <div class="modal-dialog">
@@ -622,6 +714,7 @@ function autoSave(){
                 <select id="allAttributes">
                   <option value="label/text">Name</option>
                   <option value="label/fill">Text Color</option>
+                  <option value="btuslabel">BTU Amount</option>
                 </select>
                 <select id="colorvalue">
                   <option value="white">White</option>
@@ -637,8 +730,10 @@ function autoSave(){
                 <input float="left" id="changevalue">
                 <script>
                   function updateTypeSel(){
+                    document.getElementById('changevalue').value = "";
                     if (document.getElementById("allAttributes").value == "label/fill"){document.getElementById("changevalue").style.display = "none";document.getElementById("colorvalue").style.display = "inline"; };
                     if (document.getElementById("allAttributes").value == "label/text"){document.getElementById("changevalue").style.display = "inline"; document.getElementById("colorvalue").style.display = "none";};
+                    if (document.getElementById('allAttributes').value == "btuslabel"){document.getElementById("changevalue").style.display = "inline"; document.getElementById("colorvalue").style.display = "none";}
                   //  if (document.getElementById("allAttributes").value == "body/fill"){document.getElementById("changevalue").style.display = "none"};
 
                   }
@@ -676,11 +771,18 @@ function autoSave(){
             <div class="modal-footer"><!--Connect and return currently selected dropdown and then change value specified by the attribute-->
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="if (window.confirm('Are you sure you want to change this element? Changes cannot be reverted')) {let e = returnElementByName(getSelectedElement());
                    if (document.getElementById('allAttributes').value == 'label/text') {
-                    e.attr(document.getElementById('allAttributes').value, document.getElementById('changevalue').value);
-                  }
+                    ogString = e.attr('label/text');
+                    finalString = document.getElementById('changevalue').value + ogString.split('BTUS:')[1];
+                    e.attr('label/text', finalString);
+                   }
                   if (document.getElementById('allAttributes').value == 'label/fill') {
                     e.attr(document.getElementById('allAttributes').value, document.getElementById('colorvalue').value);
                     }
+                   if (document.getElementById('allAttributes').value == 'btuslabel') {
+                    ogString = e.attr('label/text');
+                    finalString = ogString.split('BTUS:')[0] + 'BTUS:' + document.getElementById('changevalue').value;
+                    e.attr('label/text', finalString);
+                  }
                     updateElementList();}"><font color="green">Save Changes</font></button>
                 <button type="button" class="btn btn-default" data-dismiss="modal"><font color="red">Close</font></button>
             </div>
@@ -859,6 +961,7 @@ setInterval(updateCurrentSelectedDOC);
 setInterval(highlightSelectedElement, 500);
 setInterval(autoSave, 1000);
 setInterval(makeGasMeter, 1000);
+setInterval(recursiveBTUCheckForGas, 10000);
 </script>
 <script>
   getAndUpdateSFXState();
@@ -876,7 +979,7 @@ setInterval(makeGasMeter, 1000);
 <script>
   function updatePipesOptionEdit(){
     var e = getAllLinks();
-    document.getElementById("changevalue").value = getSelectedElement();
+    document.getElementById("changevalue").value = getSelectedElement().split("\n")[0];
   }
   updateElementList();
  </script>
