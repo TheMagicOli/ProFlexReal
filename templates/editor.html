@@ -20,6 +20,7 @@
         <!--DETECT IF USER RUNS IOS-->
 <div id="content">
 <img  src="{{ url_for('static', filename='pflexicon.png') }}" class="ribbon" alt="" />
+<p id="problemstext"><br>Problems: <br> </p>
 </div>
 <script>
         function iOS() {
@@ -229,6 +230,7 @@
                           currentLink = link;
                           totalBTUInLines = 0;
                           totalBTUsRequiredInLine = 0;
+                          var btuErrorFound = false;
                            //WHILE
                           while (true){
                           //Start incrementing down the link line
@@ -249,15 +251,19 @@
                           //more than the BTUS in the current line
                           if (totalBTUsRequiredInLine > totalBTUInLines){
                             //alert user
-                            //make an id for this problem
-                            console.log("true");
+                            //there has been an error so we set this flag to true
+                            btuErrorFound = true;
                             //check to see if theres any repeat errors in the project
                             console.log(errorsInProject);
-                            console.log(errorsInProject.includes(currentLink.getTargetElement().attr("label/text").split("\n")[0]));
-                            if (errorsInProject.includes(currentLink.getTargetElement().attr("label/text").split("\n")[0])){
-                                errorsInProject.append(currentLink.getTargetElement().attr("label/text").split("\n")[0]);
+                            returnValueForIfInErrors = errorsInProject.includes(currentLink.getTargetElement().attr("label/text").split("\n")[0]);
+                            if (!returnValueForIfInErrors){
+                              //if this is a new error, let's display it'
+                                errorsInProject.push(currentLink.getTargetElement().attr("label/text").split("\n")[0]);
+                                currentLink.getTargetElement().attr("label/fill", "Red");
                                 document.getElementById('errsfx').play();
+                                document.getElementById("problemstext").innerHTML = document.getElementById("problemstext").innerHTML + "<font color='red'>" + currentLink.getTargetElement().attr("label/text").split("\n")[0];
                                 showMessage("<font color='red'> Error </font> <br>The line supports " + totalBTUInLines + " BTUs, but the appliance (" + currentLink.getTargetElement().attr("label/text").split("\n")[0] + ") requires " + totalBTUsRequiredInLine + " BTUS and is not being provided enough BTUs. The problem area has been highlighted red.");
+                                break;
                               }
                             }
                           //get the next link by going link - element - link - what we want
@@ -276,6 +282,9 @@
 
                           console.log("escaped, BTUS required in line " + totalBTUsRequiredInLine);
                           console.log("actual amount of btus in line " + totalBTUInLines);
+                          if (!btuErrorFound){//if there are no errors, let's wipe all the errors from the error log
+                            document.getElementById("problemstext").innerHTML = "Problems:<br>";
+                          }
                        });
 
                       console.log("e");
@@ -539,7 +548,6 @@ function autoSave(){
 
                   <div id="bydis" class="difpipe">
                   <p>Distance (in feet) Required: <input type="nubmer"></p>
-                  <button data-dismiss="modal" onclick="recursiveBTUCheck('Gas Meter')">RECURSIVE BTU CHECK</button>
                   <button type="button" class="btn btn-default" onclick="document.getElementById('clicksfx').play();addLinkAndGetPipe(document.getElementById('UnList4').value, document.getElementById('UnList5').value)" data-dismiss="modal"><font color="green">New Pipe</font></button>
                   </div>
                   <div id="byreqs" class="difpipe">
@@ -719,7 +727,6 @@ function autoSave(){
                 <select id="colorvalue">
                   <option value="white">White</option>
                   <option value="blue">Blue</option>
-                  <option value="red">Red</option>
                   <option value="yellow">Yellow</option>
                   <option value="purple">Purple</option>
                   <option value="green">Green</option>
@@ -961,7 +968,8 @@ setInterval(updateCurrentSelectedDOC);
 setInterval(highlightSelectedElement, 500);
 setInterval(autoSave, 1000);
 setInterval(makeGasMeter, 1000);
-setInterval(recursiveBTUCheckForGas, 10000);
+recursiveBTUCheck();
+setInterval(recursiveBTUCheckForGas, 5000);
 </script>
 <script>
   getAndUpdateSFXState();
